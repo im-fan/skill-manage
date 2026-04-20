@@ -1,0 +1,3493 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>🗃️ Skill Manage</title>
+  <style>
+    :root {
+      --bg: #f3f7fb;
+      --bg-soft: #ecf2f8;
+      --card: rgba(255, 255, 255, 0.92);
+      --card-strong: rgba(255, 255, 255, 0.98);
+      --line: rgba(86, 114, 148, 0.18);
+      --text: #0c1b2d;
+      --muted: #5d728d;
+      --accent: #118ed8;
+      --accent-strong: #0f75be;
+      --ok: #129977;
+      --warn: #c98417;
+      --danger: #d54a64;
+      --path: #31506d;
+      --surface: rgba(255, 255, 255, 0.7);
+      --surface-strong: rgba(255, 255, 255, 0.9);
+      --surface-subtle: rgba(247, 251, 255, 0.82);
+      --input-bg: rgba(255, 255, 255, 0.98);
+      --input-border: rgba(86, 114, 148, 0.22);
+      --input-focus: rgba(17, 142, 216, 0.14);
+      --button-text: #ffffff;
+      --button-shadow: none;
+      --ok-text: #0f7f66;
+      --ok-bg: rgba(18, 153, 119, 0.14);
+      --ok-line: rgba(18, 153, 119, 0.24);
+      --warn-text: #9b640f;
+      --warn-bg: rgba(201, 132, 23, 0.14);
+      --warn-line: rgba(201, 132, 23, 0.24);
+      --danger-text: #b13f55;
+      --danger-bg: rgba(213, 74, 100, 0.12);
+      --danger-line: rgba(213, 74, 100, 0.24);
+      --info-text: #0f6fa3;
+      --info-bg: rgba(17, 142, 216, 0.12);
+      --info-line: rgba(17, 142, 216, 0.22);
+      --shadow: 0 8px 20px rgba(23, 58, 92, 0.08);
+      --radius: 24px;
+      --font: "Avenir Next", "IBM Plex Sans", "PingFang SC", "Helvetica Neue", sans-serif;
+      --mono: "SFMono-Regular", "JetBrains Mono", "Menlo", monospace;
+    }
+
+    html[data-theme="dark"] {
+      --bg: #0d1118;
+      --bg-soft: #121925;
+      --card: rgba(18, 26, 39, 0.94);
+      --card-strong: rgba(24, 35, 52, 0.98);
+      --line: rgba(133, 160, 194, 0.18);
+      --text: #edf4ff;
+      --muted: #96a8c0;
+      --accent: #61d0ff;
+      --accent-strong: #2eb7f4;
+      --ok: #31d0aa;
+      --warn: #ffba57;
+      --danger: #ff6c7d;
+      --path: #c8d8ee;
+      --surface: rgba(255, 255, 255, 0.05);
+      --surface-strong: rgba(255, 255, 255, 0.1);
+      --surface-subtle: rgba(255, 255, 255, 0.04);
+      --input-bg: rgba(8, 14, 22, 0.76);
+      --input-border: rgba(133, 160, 194, 0.18);
+      --input-focus: rgba(97, 208, 255, 0.12);
+      --button-text: #08131f;
+      --button-shadow: none;
+      --ok-text: #bff5e7;
+      --ok-bg: rgba(49, 208, 170, 0.12);
+      --ok-line: rgba(49, 208, 170, 0.28);
+      --warn-text: #ffe6b4;
+      --warn-bg: rgba(255, 186, 87, 0.12);
+      --warn-line: rgba(255, 186, 87, 0.28);
+      --danger-text: #ffd2d8;
+      --danger-bg: rgba(255, 108, 125, 0.12);
+      --danger-line: rgba(255, 108, 125, 0.28);
+      --info-text: #d5f5ff;
+      --info-bg: rgba(97, 208, 255, 0.1);
+      --info-line: rgba(97, 208, 255, 0.24);
+      --shadow: 0 8px 22px rgba(0, 0, 0, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 97%, white) 0%, var(--bg-soft) 100%);
+      color: var(--text);
+      font-family: var(--font);
+    }
+
+    body {
+      padding: 28px;
+    }
+
+    .shell {
+      max-width: 1520px;
+      margin: 0 auto;
+      display: grid;
+      gap: 24px;
+    }
+
+    .hero,
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+      border-radius: var(--radius);
+    }
+
+    .hero {
+      position: relative;
+      overflow: visible;
+      padding: 24px;
+      display: grid;
+      gap: 16px;
+      z-index: 5;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 54px);
+      line-height: 1.02;
+      letter-spacing: 0.01em;
+    }
+
+    .hero p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      max-width: 880px;
+      line-height: 1.6;
+    }
+
+    .hero-actions,
+    .row-actions,
+    .section-actions,
+    .tab-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .hero-actions {
+      justify-content: flex-end;
+    }
+
+    .hero-brand {
+      display: grid;
+      gap: 10px;
+    }
+
+    button,
+    select,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+      border-radius: 14px;
+      padding: 8px 12px;
+      color: var(--button-text);
+      background: var(--accent);
+      box-shadow: var(--button-shadow);
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    }
+
+    button:hover {
+      transform: translateY(-0.5px);
+      border-color: color-mix(in srgb, var(--accent) 44%, transparent);
+      filter: saturate(1.01);
+    }
+
+    button.secondary {
+      color: var(--text);
+      background: color-mix(in srgb, var(--card-strong) 86%, var(--surface));
+      border-color: var(--line);
+      box-shadow: none;
+    }
+
+    button.warn {
+      color: var(--warn-text);
+      background: var(--warn-bg);
+      border-color: var(--warn-line);
+      box-shadow: none;
+    }
+
+    button.danger {
+      color: var(--danger-text);
+      background: var(--danger-bg);
+      border-color: var(--danger-line);
+      box-shadow: none;
+    }
+
+    button[disabled] {
+      cursor: not-allowed;
+      opacity: 0.45;
+      transform: none;
+      box-shadow: none;
+      filter: none;
+    }
+
+    .theme-toggle {
+      min-width: 58px;
+      padding: 8px 12px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+    }
+
+    .language-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--card-strong) 86%, var(--surface));
+    }
+
+    .language-toggle button {
+      min-width: 44px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border-color: transparent;
+      background: transparent;
+      color: var(--muted);
+      box-shadow: none;
+    }
+
+    .language-toggle button.active {
+      background: color-mix(in srgb, var(--accent) 14%, var(--surface-strong));
+      border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
+      color: var(--text);
+    }
+
+    .theme-icon {
+      font-size: 16px;
+      line-height: 1;
+      opacity: 0.44;
+      color: var(--muted);
+      transition: opacity 0.18s ease, transform 0.18s ease, color 0.18s ease;
+    }
+
+    .theme-icon.active {
+      opacity: 1;
+      transform: scale(1.06);
+      color: var(--text);
+    }
+
+    .badge-row,
+    .stat-grid,
+    .agent-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .badge,
+    .stat,
+    .pill {
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 13px;
+      line-height: 1;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--muted);
+    }
+
+    .badge.ok {
+      color: var(--ok-text);
+      border-color: var(--ok-line);
+      background: var(--ok-bg);
+    }
+
+    .badge.warn {
+      color: var(--warn-text);
+      border-color: var(--warn-line);
+      background: var(--warn-bg);
+    }
+
+    .badge.danger {
+      color: var(--danger-text);
+      border-color: var(--danger-line);
+      background: var(--danger-bg);
+    }
+
+    .badge.info {
+      color: var(--info-text);
+      border-color: var(--info-line);
+      background: var(--info-bg);
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      border-radius: 20px;
+      padding: 16px;
+      background: var(--surface-strong);
+      border-color: var(--line);
+      min-height: 90px;
+      display: grid;
+      align-content: space-between;
+    }
+
+    .stat strong {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      position: relative;
+      z-index: 20;
+    }
+
+    .tab-button {
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--surface-strong);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      box-shadow: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .tab-button.system-tab {
+      margin-left: auto;
+    }
+
+    .tab-button.active {
+      color: var(--text);
+      background: color-mix(in srgb, var(--accent) 14%, var(--surface-strong));
+      border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
+      box-shadow: none;
+    }
+
+    .agent-tab-shell {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      z-index: 30;
+    }
+
+    .agent-tab-label {
+      pointer-events: none;
+    }
+
+    .agent-hover-menu {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 0;
+      min-width: 260px;
+      padding: 12px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--card-strong);
+      box-shadow: var(--shadow);
+      display: none;
+      z-index: 40;
+      gap: 10px;
+    }
+
+    .agent-tab-shell:hover .agent-hover-menu,
+    .agent-tab-shell:focus-within .agent-hover-menu {
+      display: grid;
+    }
+
+    .agent-hover-option {
+      width: 100%;
+      text-align: left;
+      background: var(--surface-strong);
+      color: var(--text);
+      border-color: var(--line);
+      box-shadow: none;
+      display: grid;
+      gap: 6px;
+    }
+
+    .agent-hover-option.active {
+      border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
+      background: color-mix(in srgb, var(--accent) 12%, var(--surface-strong));
+    }
+
+    .agent-hover-option small {
+      color: var(--muted);
+    }
+
+    .agent-title-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .agent-inline-switcher {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      z-index: 40;
+    }
+
+    .agent-inline-trigger {
+      gap: 8px;
+    }
+
+    .agent-inline-switcher.open .agent-hover-menu {
+      display: grid;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: grid;
+      gap: 24px;
+    }
+
+    .panel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      padding: 24px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .section-head h2,
+    .section-head h3 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0.01em;
+    }
+
+    .system-card .section-head {
+      justify-content: flex-start;
+      align-items: flex-start;
+      flex-wrap: nowrap;
+      min-height: 28px;
+    }
+
+    .system-card .section-head h2 {
+      text-align: left;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .scan-root-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .scan-root-row {
+      display: grid;
+      grid-template-columns: minmax(170px, 0.8fr) minmax(280px, 1.8fr) minmax(220px, 1.2fr) auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .scan-root-field {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .scan-root-submit {
+      display: flex;
+      align-items: end;
+    }
+
+    .scan-root-submit button {
+      min-width: 132px;
+      white-space: nowrap;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text);
+      padding: 10px 12px;
+      outline: none;
+      box-shadow: none;
+    }
+
+    .inline-select {
+      min-width: 220px;
+      max-width: 360px;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+      box-shadow: 0 0 0 4px var(--input-focus);
+    }
+
+    .list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .list-item {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--surface-strong);
+      display: grid;
+      gap: 8px;
+    }
+
+    .list-item-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .list-item strong {
+      font-size: 16px;
+      word-break: break-word;
+    }
+
+    .skill-grid {
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+      align-items: start;
+    }
+
+    .skill-grid > .empty,
+    .skill-grid > .skill-search-shell {
+      grid-column: 1 / -1;
+    }
+
+    .skill-search-shell {
+      padding: 12px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--surface-subtle) 80%, var(--card-strong));
+      box-shadow: none;
+    }
+
+    .skill-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      height: 100%;
+      padding: 16px;
+      border-radius: 22px;
+      border-color: var(--line);
+      background: color-mix(in srgb, var(--card-strong) 70%, transparent);
+      box-shadow: 0 4px 12px color-mix(in srgb, var(--text) 4%, transparent);
+      gap: 12px;
+      align-content: start;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      cursor: pointer;
+    }
+
+    .skill-card:hover {
+      transform: translateY(-1px);
+      border-color: color-mix(in srgb, var(--accent) 18%, var(--line));
+      box-shadow: 0 8px 16px color-mix(in srgb, var(--text) 6%, transparent);
+    }
+
+    .skill-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .skill-card-title {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .skill-card-kicker {
+      font-size: 11px;
+      line-height: 1;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .skill-card-mainline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .skill-card-mainline strong {
+      font-size: 18px;
+      line-height: 1.35;
+    }
+
+    .skill-card-tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      line-height: 1;
+      font-weight: 700;
+      white-space: nowrap;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--muted);
+    }
+
+    .skill-card-tag.category-normal {
+      color: var(--ok-text);
+      border-color: var(--ok-line);
+      background: color-mix(in srgb, var(--ok-bg) 92%, var(--card-strong));
+    }
+
+    .skill-card-tag.category-mounted {
+      color: var(--info-text);
+      border-color: var(--info-line);
+      background: color-mix(in srgb, var(--info-bg) 92%, var(--card-strong));
+    }
+
+    .skill-card-tag.category-invalid {
+      color: var(--danger-text);
+      border-color: var(--danger-line);
+      background: color-mix(in srgb, var(--danger-bg) 92%, var(--card-strong));
+    }
+
+    .skill-card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-start;
+      align-items: center;
+      margin-top: auto;
+      padding-top: 0;
+    }
+
+    .skill-card-actions button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 5px 9px;
+      min-height: 26px;
+      min-width: 64px;
+      border-radius: 999px;
+      font-size: 11px;
+      line-height: 1.1;
+      box-shadow: none;
+      border-color: var(--line);
+      background: color-mix(in srgb, var(--surface-strong) 90%, var(--card-strong));
+      color: var(--text);
+    }
+
+    .skill-card-actions button:hover {
+      transform: translateY(-1px);
+      border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
+      filter: none;
+    }
+
+    .skill-card-actions button.secondary {
+      background: color-mix(in srgb, var(--surface-subtle) 92%, var(--card-strong));
+      color: var(--text);
+    }
+
+    .skill-card-actions button.warn {
+      background: var(--warn-bg);
+      color: var(--warn-text);
+      border-color: var(--warn-line);
+    }
+
+    .skill-card-actions button.danger {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      border-color: var(--danger-line);
+    }
+
+    .skill-card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .skill-card-meta .note {
+      margin-left: auto;
+    }
+
+    .skill-card-section {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--surface-subtle) 66%, transparent);
+      border: 1px solid color-mix(in srgb, var(--line) 76%, transparent);
+    }
+
+    .skill-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .skill-card-pair {
+      display: grid;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--surface-strong) 72%, transparent);
+      border: 1px solid color-mix(in srgb, var(--line) 74%, transparent);
+    }
+
+    .skill-card-pair-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .skill-card-pair-name {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .skill-card-score {
+      padding: 8px 10px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--surface-subtle) 78%, var(--card-strong));
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .section-head-search {
+      align-items: flex-end;
+    }
+
+    .section-head-search > div:first-child {
+      display: grid;
+      gap: 6px;
+    }
+
+    .section-search {
+      width: min(360px, 100%);
+      margin-left: auto;
+    }
+
+    .path,
+    .code {
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--path);
+      word-break: break-all;
+    }
+
+    .skill-path-row {
+      display: grid;
+      gap: 6px;
+    }
+
+    .skill-path-main {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .path.path-ellipsis {
+      min-width: 0;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      word-break: normal;
+      cursor: copy;
+    }
+
+    .path-copy {
+      padding: 4px 8px;
+      font-size: 11px;
+      line-height: 1;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+
+    .detail-pre {
+      margin: 0;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--surface-subtle) 72%, transparent);
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: min(60vh, 560px);
+      overflow: auto;
+    }
+
+    .description {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .search-hit {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .note {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .empty {
+      border: 1px dashed var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      color: var(--muted);
+      text-align: center;
+      background: var(--surface-subtle);
+    }
+
+    .status-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .agent-stack {
+      display: grid;
+      gap: 24px;
+    }
+
+    .agent-top-card {
+      position: relative;
+      z-index: 12;
+      gap: 16px;
+    }
+
+    .agent-top-grid {
+      display: grid;
+      grid-template-columns: minmax(360px, 1.3fr) minmax(280px, 0.9fr) auto;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .agent-side-meta {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .agent-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-start;
+      grid-column: 1 / -1;
+    }
+
+    .agent-actions button {
+      min-width: 0;
+    }
+
+    .agent-layout {
+      display: grid;
+      grid-template-columns: minmax(340px, 1fr) minmax(440px, 1.2fr);
+      gap: 16px;
+    }
+
+    .agent-layout.single-column {
+      grid-template-columns: 1fr;
+    }
+
+    .agent-layout .card {
+      min-height: 100%;
+    }
+
+    .agent-manage-layout {
+      grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .agent-manage-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .agent-manage-list {
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .log-list {
+      display: grid;
+      gap: 12px;
+      min-height: 520px;
+      max-height: min(72vh, 860px);
+      overflow: auto;
+      padding-right: 8px;
+    }
+
+    .log-line {
+      padding: 12px 16px;
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--surface-strong) 90%, var(--card-strong));
+      border: 1px solid var(--line);
+      font-size: 13px;
+      line-height: 1.65;
+      display: grid;
+      gap: 8px;
+    }
+
+    .logs-card {
+      grid-column: 1 / -1;
+    }
+
+    .system-layout {
+      grid-template-columns: minmax(360px, 430px) minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .system-status-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .status-card {
+      min-height: 88px;
+      padding: 12px 14px;
+      gap: 6px;
+      align-content: space-between;
+      background: color-mix(in srgb, var(--surface-subtle) 78%, var(--card-strong));
+    }
+
+    .status-card .path {
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .system-layout .logs-card {
+      grid-column: auto;
+      min-width: 0;
+    }
+
+    .log-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .log-head strong {
+      font-size: 15px;
+    }
+
+    .log-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .log-detail {
+      color: var(--muted);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .log-more,
+    .log-end {
+      text-align: center;
+      color: var(--muted);
+      padding: 8px 0 2px;
+    }
+
+    dialog {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 0;
+      background: var(--card-strong);
+      color: var(--text);
+      box-shadow: var(--shadow);
+      width: min(560px, calc(100vw - 32px));
+    }
+
+    dialog::backdrop {
+      background: rgba(10, 18, 32, 0.28);
+      backdrop-filter: blur(6px);
+    }
+
+    .dialog-shell {
+      padding: 24px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 1120px) {
+      .agent-top-grid,
+      .agent-layout,
+      .agent-manage-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .agent-actions {
+        justify-content: flex-start;
+      }
+
+      .scan-root-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .scan-root-submit {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 16px;
+      }
+
+      .hero,
+      .card {
+        padding: 18px;
+      }
+
+      .field-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .scan-root-row {
+        grid-template-columns: 1fr;
+      }
+
+      .scan-root-submit button {
+        width: 100%;
+      }
+
+      .section-search {
+        width: 100%;
+      }
+
+      .skill-card-meta .note {
+        margin-left: 0;
+      }
+
+      .system-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .system-status-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      }
+
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--line);
+      outline: none;
+      border: none;
+      padding: 0;
+      box-shadow: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="hero-top">
+        <div class="hero-brand">
+          <h1>Skill Manage</h1>
+          <p data-i18n="hero.subtitle">统一管理 SKILL仓库扫描、Agent 挂载与失效清理</p>
+        </div>
+        <div class="hero-actions">
+          <div id="languageToggle" class="language-toggle" aria-label="Language Toggle">
+            <button type="button" class="secondary active" data-action="set-language" data-lang="zh">中</button>
+            <button type="button" class="secondary" data-action="set-language" data-lang="en">En</button>
+          </div>
+          <button id="themeToggle" class="theme-toggle secondary" data-action="toggle-theme" data-i18n-title="action.toggleTheme" title="切换明暗主题">
+            <span id="themeSun" class="theme-icon">☀</span>
+            <span id="themeMoon" class="theme-icon">☾</span>
+          </button>
+        </div>
+      </div>
+      <div id="overviewStats" class="stat-grid"></div>
+      <div id="topTabs" class="tabs"></div>
+    </section>
+
+    <section id="tab-local" class="tab-panel active">
+      <div class="panel-grid">
+        <article class="card">
+          <div class="section-head">
+            <h2 data-i18n="local.newScanRoot.title">新增扫描源</h2>
+          </div>
+          <form id="scanRootForm" class="scan-root-form">
+            <div class="scan-root-row">
+              <label class="scan-root-field">
+                <span class="label" data-i18n="common.type">类型</span>
+                <select id="rootMode">
+                  <option value="skill_root" data-i18n="local.rootMode.skill_root">Skill 根目录</option>
+                  <option value="skill_dir" data-i18n="local.rootMode.skill_dir">单个 Skill 目录</option>
+                </select>
+              </label>
+
+              <label class="scan-root-field">
+                <span class="label" data-i18n="common.path">路径</span>
+                <input id="rootPath" type="text" data-i18n-placeholder="placeholder.pathExample" placeholder="/Users/you/Desktop/skills">
+              </label>
+
+              <label class="scan-root-field">
+                <span class="label" data-i18n="common.note">备注</span>
+                <input id="rootNote" type="text" data-i18n-placeholder="placeholder.scanRootNote" placeholder="例如：个人技能库 / 团队沉淀">
+              </label>
+
+              <div class="scan-root-submit">
+                <button type="submit" data-i18n="action.saveAndScan">保存并扫描</button>
+              </div>
+            </div>
+            <span class="muted" data-i18n-html="local.newScanRoot.note">`skill_root` 会递归找出含 `SKILL.md` 的目录；`skill_dir` 只收录当前目录。</span>
+          </form>
+          <div class="section-head" style="margin-top:18px;">
+            <h3 data-i18n="local.scanRootList.title">扫描源列表</h3>
+            <div class="section-actions">
+              <button class="secondary" data-action="rescan-all-roots" data-i18n="action.rescanAll">全部重扫</button>
+            </div>
+          </div>
+          <div id="scanRootList" class="list skill-grid"></div>
+        </article>
+      </div>
+
+      <article class="card">
+        <div class="section-head">
+          <h2 data-i18n="similarity.title">相似 Skill 扫描</h2>
+        </div>
+        <div class="field-grid">
+          <div class="label" data-i18n="similarity.threshold">相似度阈值</div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <input id="local-similarity-slider" type="range" min="0.2" max="1" step="0.05" value="0.5" data-local-similarity-slider="1" style="flex:1;">
+            <span id="local-similarity-value" style="min-width:42px;text-align:center;font-weight:700;">0.50</span>
+          </div>
+        </div>
+        <div class="row-actions">
+          <button data-action="find-local-similar" id="find-local-similar-btn" data-i18n="action.scanSimilar">扫描相似</button>
+          <span class="muted" id="local-similar-status" data-i18n="similarity.localStatus">对比 SKILL仓库中状态正常的 Skill 名称和文件内容</span>
+        </div>
+        <div id="local-similar-results" style="display:none;"></div>
+      </article>
+
+      <article class="card">
+        <div class="section-head section-head-search">
+          <div>
+            <h2 data-i18n="tab.local">SKILL仓库</h2>
+            <div class="muted" data-i18n="local.repository.note">按名称、路径或描述筛选，结果以卡片方式展示。</div>
+          </div>
+          <div class="section-search">
+            <input id="skillSearch" type="text" data-i18n-placeholder="placeholder.filterByNamePath" placeholder="按名称 / 路径过滤">
+          </div>
+        </div>
+        <div id="localSkillList" class="list skill-grid"></div>
+      </article>
+    </section>
+
+    <section id="tab-agent-list" class="tab-panel">
+      <div id="agentListContent" class="agent-stack"></div>
+    </section>
+
+    <section id="tab-agent-manage" class="tab-panel">
+      <div class="panel-grid agent-manage-layout">
+        <article class="card">
+          <div class="section-head">
+            <div>
+              <h2 id="agentManageFormTitle" data-i18n="agentManage.form.newTitle">新增 Agent</h2>
+              <div class="muted" data-i18n="agentManage.form.note">支持手动新增、编辑目录信息，并将 Agent 控制权全部收敛到数据库。</div>
+            </div>
+            <div class="section-actions">
+              <button class="secondary" type="button" data-action="agent-manage-new" data-i18n="action.new">新建</button>
+            </div>
+          </div>
+          <form id="agentManageForm" class="scan-root-form">
+            <input id="agentManageEditingCode" type="hidden">
+            <label class="scan-root-field">
+              <span class="label" data-i18n="agentManage.form.code">Agent Code</span>
+              <input id="agentManageCode" type="text" data-i18n-placeholder="placeholder.agentCode" placeholder="例如：codex-proxy">
+            </label>
+            <label class="scan-root-field">
+              <span class="label" data-i18n="agentManage.form.displayName">展示名称</span>
+              <input id="agentManageName" type="text" data-i18n-placeholder="placeholder.agentDisplayName" placeholder="例如：Codex Proxy">
+            </label>
+            <label class="scan-root-field">
+              <span class="label" data-i18n="common.defaultPath">默认目录</span>
+              <input id="agentManageDefaultPath" type="text" data-i18n-placeholder="placeholder.agentPath" placeholder="/Users/you/.agent/skills">
+            </label>
+            <label class="scan-root-field">
+              <span class="label" data-i18n="common.currentPath">当前目录</span>
+              <input id="agentManageConfiguredPath" type="text" data-i18n-placeholder="placeholder.agentPath" placeholder="/Users/you/.agent/skills">
+            </label>
+            <div class="dialog-actions" style="justify-content:flex-start;">
+              <button id="agentManageSubmit" type="submit" data-i18n="agentManage.form.createButton">创建 Agent</button>
+              <button class="secondary" type="button" data-action="auto-discover-agents" data-i18n="agentManage.form.autoDiscover">自动检索内置 Agent</button>
+            </div>
+            <div class="note" data-i18n-html="agentManage.form.autoDiscoverNote">自动检索仅收录 `Codex / ClaudeCode / OpenClaw / Hermes` 的默认目录；手动新增适合团队自定义 Agent。</div>
+          </form>
+        </article>
+        <article class="card">
+          <div class="section-head">
+            <div>
+              <h2 data-i18n="tab.agentList">Agent 列表</h2>
+              <div class="muted" data-i18n="agentManage.list.note">支持查看、编辑、设为当前 Agent，以及显示/隐藏控制。</div>
+            </div>
+            <div id="agentManageSummary" class="agent-manage-summary"></div>
+          </div>
+          <div id="agentManageList" class="list skill-grid agent-manage-list"></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="tab-system" class="tab-panel">
+      <div class="panel-grid system-layout">
+        <article class="card system-card">
+          <div class="section-head">
+            <h2 data-i18n="system.status.title">系统状态</h2>
+          </div>
+          <div id="systemStatus" class="list system-status-grid"></div>
+        </article>
+        <article class="card system-card logs-card">
+          <div class="section-head">
+            <h2 data-i18n="system.logs.title">最近操作</h2>
+          </div>
+          <div id="operationLog" class="log-list"></div>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <dialog id="moveSkillDialog">
+    <form method="dialog" class="dialog-shell">
+      <div class="section-head">
+        <h2 data-i18n="dialog.moveSkill.title">移动 Skill</h2>
+      </div>
+      <div id="moveSkillDialogBody" class="note"></div>
+      <select id="moveSkillDialogSelect"></select>
+      <div class="dialog-actions">
+        <button class="secondary" value="cancel" data-i18n="action.cancel">取消</button>
+        <button id="moveSkillDialogConfirm" value="confirm" data-i18n="action.confirmMove">确认移动</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="scanRootEditDialog">
+    <form id="scanRootEditForm" method="dialog" class="dialog-shell">
+      <div class="section-head">
+        <h2 data-i18n="dialog.editScanRoot.title">编辑扫描源</h2>
+      </div>
+      <input id="scanRootEditOldPath" type="hidden">
+      <label class="scan-root-field">
+        <span class="label" data-i18n="common.type">类型</span>
+        <select id="scanRootEditMode">
+          <option value="skill_root" data-i18n="local.rootMode.skill_root">Skill 根目录</option>
+          <option value="skill_dir" data-i18n="local.rootMode.skill_dir">单个 Skill 目录</option>
+        </select>
+      </label>
+      <label class="scan-root-field">
+        <span class="label" data-i18n="common.path">路径</span>
+        <input id="scanRootEditPath" type="text" data-i18n-placeholder="placeholder.pathExample" placeholder="/Users/you/Desktop/skills">
+      </label>
+      <label class="scan-root-field">
+        <span class="label" data-i18n="common.note">备注</span>
+        <input id="scanRootEditNote" type="text" data-i18n-placeholder="placeholder.scanRootNote" placeholder="例如：个人技能库 / 团队沉淀">
+      </label>
+      <div class="note" data-i18n="dialog.editScanRoot.note">保存后会立即更新扫描源信息并重新扫描当前目录。</div>
+      <div class="dialog-actions">
+        <button class="secondary" value="cancel" data-i18n="action.cancel">取消</button>
+        <button id="scanRootEditConfirm" value="confirm" type="submit" data-i18n="action.saveAndRescan">保存并重扫</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="skillDetailDialog">
+    <form method="dialog" class="dialog-shell">
+      <div class="section-head">
+        <h2 id="skillDetailTitle" data-i18n="dialog.skillDetail.title">Skill 详情</h2>
+      </div>
+      <pre id="skillDetailBody" class="detail-pre"></pre>
+      <div class="dialog-actions">
+        <button class="secondary" value="cancel" data-i18n="action.close">关闭</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    (() => {
+      const state = {
+        activeTab: "local",
+        language: localStorage.getItem("skill-manage-language") || "zh",
+        search: "",
+        agents: [],
+        currentAgentCode: "",
+        agentSwitcherOpen: false,
+        agentLibrarySearch: {},
+        agentCurrentSearch: {},
+        composingAgentLibrarySearch: {},
+        composingAgentCurrentSearch: {},
+        localSimilarityThreshold: 0.5,
+        localSimilarResults: [],
+        moveDialog: {
+          mode: "",
+          agentCode: "",
+          linkPath: "",
+          skillPath: "",
+          currentRootPath: "",
+          selectedRootPath: ""
+        },
+        theme: localStorage.getItem("skill-manage-theme") || localStorage.getItem("skill-manager-theme") || "light",
+        operationLogs: [],
+        operationLogPage: 1,
+        operationLogHasNext: false,
+        operationLogLoading: false,
+        runtime: {
+          connected: false,
+          error: "",
+          server_url: "",
+          htmlPath: "",
+          appDir: "",
+          dbPath: "",
+          pythonVersion: "",
+          scriptPath: ""
+        },
+        scanRoots: [],
+        localSkills: [],
+        agentTargets: {},
+        agentEntries: {},
+        similarityThresholds: {},
+        similarResults: {},
+        cardDetails: {},
+        cardDetailSeq: 0,
+        apiBase: new URLSearchParams(location.search).get("api") || (location.protocol === "file:" ? "http://127.0.0.1:8765" : "")
+      };
+
+      const $ = (selector) => document.querySelector(selector);
+      const I18N = {
+        zh: {
+          "hero.subtitle": "统一管理 SKILL仓库扫描、Agent 挂载与失效清理",
+          "action.toggleTheme": "切换明暗主题",
+          "action.saveAndScan": "保存并扫描",
+          "action.rescanAll": "全部重扫",
+          "action.scanSimilar": "扫描相似",
+          "action.new": "新建",
+          "action.cancel": "取消",
+          "action.confirmMove": "确认移动",
+          "action.saveAndRescan": "保存并重扫",
+          "action.close": "关闭",
+          "action.copy": "复制",
+          "action.move": "移动",
+          "action.deleteRecord": "删除记录",
+          "action.edit": "编辑",
+          "action.hide": "隐藏",
+          "action.show": "显示",
+          "action.setCurrent": "设为当前",
+          "action.delete": "删除",
+          "action.goToAgentManage": "前往 Agent管理",
+          "action.savePath": "保存路径",
+          "action.refreshFolder": "刷新目录",
+          "action.addToRepository": "添加到SKILL仓库",
+          "action.cleanupInvalid": "清理失效",
+          "action.mountToAgent": "挂载到 {name}",
+          "action.removeMount": "移除挂载",
+          "action.addToLocalLibrary": "加入本地库",
+          "action.removeFromLocalLibrary": "移出本地库",
+          "action.noMovableRoot": "无可移动源",
+          "action.deleteFolder": "删除目录",
+          "action.createAgent": "创建 Agent",
+          "action.saveUpdate": "保存更新",
+          "common.type": "类型",
+          "common.path": "路径",
+          "common.note": "备注",
+          "common.defaultPath": "默认目录",
+          "common.currentPath": "当前目录",
+          "common.fullPath": "完整路径",
+          "common.entry": "entry",
+          "common.target": "target",
+          "common.serviceStatus": "服务状态",
+          "common.serviceUrl": "服务地址",
+          "common.sqlite": "SQLite3",
+          "common.python": "Python",
+          "common.connected": "已连接",
+          "common.disconnected": "未连接",
+          "placeholder.pathExample": "/Users/you/Desktop/skills",
+          "placeholder.scanRootNote": "例如：个人技能库 / 团队沉淀",
+          "placeholder.filterByNamePath": "按名称 / 路径过滤",
+          "placeholder.agentCode": "例如：codex-proxy",
+          "placeholder.agentDisplayName": "例如：Codex Proxy",
+          "placeholder.agentPath": "/Users/you/.agent/skills",
+          "placeholder.filterAddableSkills": "按名称 / 路径 / 描述查找可添加的 SKILL",
+          "placeholder.filterCurrentSkills": "按名称 / 路径 / 描述筛选当前目录 Skill",
+          "local.newScanRoot.title": "新增扫描源",
+          "local.rootMode.skill_root": "Skill 根目录",
+          "local.rootMode.skill_dir": "单个 Skill 目录",
+          "local.newScanRoot.note": "<span class=\"code\">skill_root</span> 会递归找出含 <span class=\"code\">SKILL.md</span> 的目录；<span class=\"code\">skill_dir</span> 只收录当前目录。",
+          "local.scanRootList.title": "扫描源列表",
+          "local.repository.note": "按名称、路径或描述筛选，结果以卡片方式展示。",
+          "local.scanRoot.empty": "还没有扫描源。添加根目录后会把含 <span class=\"code\">SKILL.md</span> 的目录收录到SKILL仓库。",
+          "local.scanRoot.kicker": "扫描源",
+          "local.scanRoot.skillCount": "Skill 数量 {count}",
+          "local.scanRoot.lastScan": "最近扫描：{time}",
+          "local.scanRoot.statusTitle": "扫描状态",
+          "local.scanRoot.error": "错误：{error}",
+          "local.scanRoot.ok": "最近扫描正常，无错误信息。",
+          "local.skill.empty": "没有匹配的 Skill。",
+          "local.skill.filterNote": "按名称、路径或描述筛选，结果以卡片方式展示。",
+          "similarity.title": "相似 Skill 扫描",
+          "similarity.threshold": "相似度阈值",
+          "similarity.localStatus": "对比 SKILL仓库中状态正常的 Skill 名称和文件内容",
+          "similarity.agentStatus": "对比当前目录中正常 Skill 和挂载 Skill 的名称和文件内容",
+          "similarity.scanning": "正在计算相似度...",
+          "similarity.scanDone": "扫描完成，找到 {count} 个相似匹配",
+          "similarity.scanFailed": "扫描失败：{message}",
+          "similarity.matchKicker": "相似匹配",
+          "similarity.percent": "相似度 {pct}%",
+          "similarity.reason": "相似原因",
+          "similarity.sharedPhrases": "共同短语：{items}",
+          "similarity.sharedKeywords": "共同关键词：{items}",
+          "similarity.overlap": "词项重合 {word}%，短语重合 {phrase}%",
+          "similarity.skillA": "技能 A",
+          "similarity.skillB": "技能 B",
+          "tab.local": "SKILL仓库",
+          "tab.agentList": "Agent列表",
+          "tab.agentManage": "Agent管理",
+          "tab.system": "系统",
+          "agentManage.form.newTitle": "新增 Agent",
+          "agentManage.form.note": "支持手动新增、编辑目录信息，并将 Agent 控制权全部收敛到数据库。",
+          "agentManage.form.code": "Agent Code",
+          "agentManage.form.displayName": "展示名称",
+          "agentManage.form.createButton": "创建 Agent",
+          "agentManage.form.autoDiscover": "自动检索内置 Agent",
+          "agentManage.form.autoDiscoverNote": "自动检索仅收录 <span class=\"code\">Codex / ClaudeCode / OpenClaw / Hermes</span> 的默认目录；手动新增适合团队自定义 Agent。",
+          "agentManage.list.note": "支持查看、编辑、设为当前 Agent，以及显示/隐藏控制。",
+          "agentManage.summary.total": "总数 {count}",
+          "agentManage.summary.builtin": "内置 {count}",
+          "agentManage.summary.visible": "显示中 {count}",
+          "agentManage.summary.hidden": "已隐藏 {count}",
+          "agentManage.empty": "当前还没有 Agent。可先自动检索内置目录，或手动新增一个自定义 Agent。",
+          "agentManage.kicker": "Agent",
+          "agentManage.visible": "显示中",
+          "agentManage.hidden": "已隐藏",
+          "agentManage.editTitle": "编辑 Agent · {name}",
+          "agentList.emptyTitle": "Agent列表",
+          "agentList.emptyNote": "当前没有显示中的 Agent，请先到管理页启用或新增 Agent。",
+          "agentList.focusTitle": "Agent列表",
+          "agentList.focusNote": "当前聚焦 {name}，只展示“显示中”的 Agent。",
+          "agentList.currentTitle": "当前 Agent",
+          "agentList.switch": "切换",
+          "agentList.currentConfig": "当前配置",
+          "agentList.linked": "linked: {count}",
+          "agentList.invalid": "invalid: {count}",
+          "agentList.direct": "direct: {count}",
+          "agentList.searchReady": "search-ready: {count}",
+          "agentList.lastScan": "last scan: {time}",
+          "agentList.summaryNote": "{name} 目录展示正常、挂载和失效的 Skill。未挂载的 Skill 需要在“添加 SKILL”里检索，最多展示前 10 个结果后再执行挂载。",
+          "agentList.addSkillTitle": "添加 SKILL",
+          "agentList.addSkillNote": "输入关键字后，从SKILL仓库里挑选 Skill 添加到当前 agent，最多展示前 10 个结果",
+          "agentList.addSkillEmpty": "输入关键字后开始添加 SKILL。",
+          "agentList.addSkillNotFound": "没有找到符合条件且当前可添加的 SKILL。",
+          "agentList.currentFolderTitle": "{name} 目录",
+          "agentList.currentFolderNote": "展示 {name} 目录中的正常、挂载和失效 Skill，可按关键字过滤。",
+          "agentList.currentNotFound": "{name} 目录中没有匹配的 Skill。",
+          "agentList.currentEmpty": "{name} 目录下还没有正常、挂载或失效的 Skill。",
+          "agentList.invalidTip": "{name} 目录还有 {count} 个失效 Skill，使用上方“清理失效”处理。",
+          "agentList.repositoryPill": "SKILL仓库",
+          "agentList.scanCurrentToRepositoryTitle": "把当前配置目录中的 Skill 收录到SKILL仓库",
+          "agentList.savePathTitle": "保存当前 agent 的目标目录配置",
+          "agentList.refreshTitle": "重新扫描当前目标目录中的 Skill",
+          "agentList.cleanupTitle": "清理当前目录里已经失效的挂载链接",
+          "system.status.title": "系统状态",
+          "system.logs.title": "最近操作",
+          "system.logs.empty": "还没有操作记录。",
+          "system.logs.loadingMore": "正在加载更多操作记录...",
+          "system.logs.scrollMore": "向下滚动加载更多",
+          "system.logs.end": "已经到底了",
+          "dialog.moveSkill.title": "移动 Skill",
+          "dialog.moveSkill.body": "即将移动：<span class=\"code\">{skillPath}</span><br>当前源：<span class=\"code\">{currentRootPath}</span><br>{result}",
+          "dialog.moveSkill.result.agentDirect": "操作结果：会移动到选中的SKILL仓库，并在当前 agent 目录保留挂载链接。",
+          "dialog.moveSkill.result.local": "操作结果：会移动到选中的SKILL仓库，并同步更新已有挂载链接。",
+          "dialog.moveSkill.confirmMounted": "该 Skill 当前已挂载到这些 agent 目录：{agents}。继续移动会同步调整这些挂载链接，是否继续？",
+          "dialog.editScanRoot.title": "编辑扫描源",
+          "dialog.editScanRoot.note": "保存后会立即更新扫描源信息并重新扫描当前目录。",
+          "dialog.skillDetail.title": "Skill 详情",
+          "status.ok": "正常",
+          "status.missing": "已丢失",
+          "status.linked": "挂载",
+          "status.direct": "正常",
+          "status.invalid_missing_target": "已失效",
+          "status.invalid_missing_skill_md": "缺少 SKILL.md",
+          "status.idle": "未扫描",
+          "status.error": "扫描失败",
+          "category.normal": "正常",
+          "category.mounted": "挂载",
+          "category.invalid": "失效",
+          "error.requestFailed": "请求失败: {status}",
+          "confirm.deleteAgent": "确认删除 Agent「{agentCode}」吗？"
+        },
+        en: {
+          "hero.subtitle": "Unify SKILL repository scanning, agent mounting, and invalid link cleanup",
+          "action.toggleTheme": "Toggle light and dark theme",
+          "action.saveAndScan": "Save and Scan",
+          "action.rescanAll": "Rescan All",
+          "action.scanSimilar": "Scan Similar",
+          "action.new": "New",
+          "action.cancel": "Cancel",
+          "action.confirmMove": "Confirm Move",
+          "action.saveAndRescan": "Save and Rescan",
+          "action.close": "Close",
+          "action.copy": "Copy",
+          "action.move": "Move",
+          "action.deleteRecord": "Delete Record",
+          "action.edit": "Edit",
+          "action.hide": "Hide",
+          "action.show": "Show",
+          "action.setCurrent": "Set Current",
+          "action.delete": "Delete",
+          "action.goToAgentManage": "Go to Agent Manage",
+          "action.savePath": "Save Path",
+          "action.refreshFolder": "Refresh Folder",
+          "action.addToRepository": "Add to Repository",
+          "action.cleanupInvalid": "Clean Invalid",
+          "action.mountToAgent": "Mount to {name}",
+          "action.removeMount": "Remove Mount",
+          "action.addToLocalLibrary": "Add to Local Library",
+          "action.removeFromLocalLibrary": "Remove from Local Library",
+          "action.noMovableRoot": "No Target Root",
+          "action.deleteFolder": "Delete Folder",
+          "action.createAgent": "Create Agent",
+          "action.saveUpdate": "Save Update",
+          "common.type": "Type",
+          "common.path": "Path",
+          "common.note": "Note",
+          "common.defaultPath": "Default Path",
+          "common.currentPath": "Current Path",
+          "common.fullPath": "Full Path",
+          "common.entry": "entry",
+          "common.target": "target",
+          "common.serviceStatus": "Service Status",
+          "common.serviceUrl": "Service URL",
+          "common.sqlite": "SQLite3",
+          "common.python": "Python",
+          "common.connected": "Connected",
+          "common.disconnected": "Disconnected",
+          "placeholder.pathExample": "/Users/you/Desktop/skills",
+          "placeholder.scanRootNote": "For example: personal library / team archive",
+          "placeholder.filterByNamePath": "Filter by name / path",
+          "placeholder.agentCode": "For example: codex-proxy",
+          "placeholder.agentDisplayName": "For example: Codex Proxy",
+          "placeholder.agentPath": "/Users/you/.agent/skills",
+          "placeholder.filterAddableSkills": "Search addable SKILLs by name / path / description",
+          "placeholder.filterCurrentSkills": "Filter current folder SKILLs by name / path / description",
+          "local.newScanRoot.title": "New Scan Source",
+          "local.rootMode.skill_root": "Skill Root Directory",
+          "local.rootMode.skill_dir": "Single Skill Directory",
+          "local.newScanRoot.note": "<span class=\"code\">skill_root</span> recursively discovers directories containing <span class=\"code\">SKILL.md</span>; <span class=\"code\">skill_dir</span> only registers the current directory.",
+          "local.scanRootList.title": "Scan Source List",
+          "local.repository.note": "Filter by name, path, or description and browse results as cards.",
+          "local.scanRoot.empty": "No scan source yet. Add a root and directories containing <span class=\"code\">SKILL.md</span> will be collected into the SKILL repository.",
+          "local.scanRoot.kicker": "Scan Source",
+          "local.scanRoot.skillCount": "Skill Count {count}",
+          "local.scanRoot.lastScan": "Last scan: {time}",
+          "local.scanRoot.statusTitle": "Scan Status",
+          "local.scanRoot.error": "Error: {error}",
+          "local.scanRoot.ok": "The latest scan completed normally with no error.",
+          "local.skill.empty": "No matching skill found.",
+          "local.skill.filterNote": "Filter by name, path, or description and browse results as cards.",
+          "similarity.title": "Similar Skill Scan",
+          "similarity.threshold": "Similarity Threshold",
+          "similarity.localStatus": "Compare names and file content for healthy skills in the SKILL repository",
+          "similarity.agentStatus": "Compare names and file content for healthy and mounted skills in the current folder",
+          "similarity.scanning": "Calculating similarity...",
+          "similarity.scanDone": "Scan complete. Found {count} similar matches",
+          "similarity.scanFailed": "Scan failed: {message}",
+          "similarity.matchKicker": "Similarity Match",
+          "similarity.percent": "Similarity {pct}%",
+          "similarity.reason": "Why They Match",
+          "similarity.sharedPhrases": "Shared phrases: {items}",
+          "similarity.sharedKeywords": "Shared keywords: {items}",
+          "similarity.overlap": "Word overlap {word}%, phrase overlap {phrase}%",
+          "similarity.skillA": "Skill A",
+          "similarity.skillB": "Skill B",
+          "tab.local": "SKILL Repository",
+          "tab.agentList": "Agent List",
+          "tab.agentManage": "Agent Manage",
+          "tab.system": "System",
+          "agentManage.form.newTitle": "New Agent",
+          "agentManage.form.note": "Manually add or edit agent directory settings and keep all agent control in the database.",
+          "agentManage.form.code": "Agent Code",
+          "agentManage.form.displayName": "Display Name",
+          "agentManage.form.createButton": "Create Agent",
+          "agentManage.form.autoDiscover": "Auto Discover Built-in Agents",
+          "agentManage.form.autoDiscoverNote": "Auto discovery only registers default directories for <span class=\"code\">Codex / ClaudeCode / OpenClaw / Hermes</span>; manual creation is for custom team agents.",
+          "agentManage.list.note": "Review, edit, set the current agent, and control visibility from one place.",
+          "agentManage.summary.total": "Total {count}",
+          "agentManage.summary.builtin": "Built-in {count}",
+          "agentManage.summary.visible": "Visible {count}",
+          "agentManage.summary.hidden": "Hidden {count}",
+          "agentManage.empty": "No agents yet. Auto discover a built-in directory first, or add a custom agent manually.",
+          "agentManage.kicker": "Agent",
+          "agentManage.visible": "Visible",
+          "agentManage.hidden": "Hidden",
+          "agentManage.editTitle": "Edit Agent · {name}",
+          "agentList.emptyTitle": "Agent List",
+          "agentList.emptyNote": "No visible agent right now. Enable or add one from the management tab first.",
+          "agentList.focusTitle": "Agent List",
+          "agentList.focusNote": "Currently focused on {name}. Only visible agents are shown here.",
+          "agentList.currentTitle": "Current Agent",
+          "agentList.switch": "Switch",
+          "agentList.currentConfig": "Current Config",
+          "agentList.linked": "linked: {count}",
+          "agentList.invalid": "invalid: {count}",
+          "agentList.direct": "direct: {count}",
+          "agentList.searchReady": "search-ready: {count}",
+          "agentList.lastScan": "last scan: {time}",
+          "agentList.summaryNote": "{name} shows healthy, mounted, and invalid skills in its directory. Search in “Add SKILL” to mount new items; only the top 10 matches are shown.",
+          "agentList.addSkillTitle": "Add SKILL",
+          "agentList.addSkillNote": "Type a keyword to pick skills from the SKILL repository and add them to the current agent. Up to 10 results are shown.",
+          "agentList.addSkillEmpty": "Start typing to add a SKILL.",
+          "agentList.addSkillNotFound": "No addable SKILL matched the current filter.",
+          "agentList.currentFolderTitle": "{name} Directory",
+          "agentList.currentFolderNote": "Show healthy, mounted, and invalid skills in the {name} directory, and filter them by keyword.",
+          "agentList.currentNotFound": "No matching skill found in the {name} directory.",
+          "agentList.currentEmpty": "No healthy, mounted, or invalid skills are currently in the {name} directory.",
+          "agentList.invalidTip": "There are still {count} invalid skills in the {name} directory. Use “Clean Invalid” above.",
+          "agentList.repositoryPill": "SKILL Repository",
+          "agentList.scanCurrentToRepositoryTitle": "Collect skills from the current configured directory into the SKILL repository",
+          "agentList.savePathTitle": "Save the current target directory for this agent",
+          "agentList.refreshTitle": "Rescan skills in the current target directory",
+          "agentList.cleanupTitle": "Clean invalid mounted links in the current directory",
+          "system.status.title": "System Status",
+          "system.logs.title": "Recent Operations",
+          "system.logs.empty": "No operation log yet.",
+          "system.logs.loadingMore": "Loading more operation logs...",
+          "system.logs.scrollMore": "Scroll down to load more",
+          "system.logs.end": "Reached the end",
+          "dialog.moveSkill.title": "Move Skill",
+          "dialog.moveSkill.body": "Move now: <span class=\"code\">{skillPath}</span><br>Current source: <span class=\"code\">{currentRootPath}</span><br>{result}",
+          "dialog.moveSkill.result.agentDirect": "Result: the skill will move into the selected SKILL repository and keep a mounted link in the current agent directory.",
+          "dialog.moveSkill.result.local": "Result: the skill will move into the selected SKILL repository and any managed mounted links will be updated.",
+          "dialog.moveSkill.confirmMounted": "This skill is currently mounted into these agent directories: {agents}. Continuing will update those mounted links as well. Continue?",
+          "dialog.editScanRoot.title": "Edit Scan Source",
+          "dialog.editScanRoot.note": "Saving will immediately update the scan source and rescan the current directory.",
+          "dialog.skillDetail.title": "Skill Detail",
+          "status.ok": "Healthy",
+          "status.missing": "Missing",
+          "status.linked": "Mounted",
+          "status.direct": "Healthy",
+          "status.invalid_missing_target": "Invalid",
+          "status.invalid_missing_skill_md": "Missing SKILL.md",
+          "status.idle": "Not Scanned",
+          "status.error": "Scan Failed",
+          "category.normal": "Healthy",
+          "category.mounted": "Mounted",
+          "category.invalid": "Invalid",
+          "error.requestFailed": "Request failed: {status}",
+          "confirm.deleteAgent": "Delete agent “{agentCode}”?"
+        }
+      };
+
+      function t(key, values = {}) {
+        const template = I18N[state.language]?.[key] ?? I18N.zh[key] ?? key;
+        return String(template).replace(/\{(\w+)\}/g, (_, name) => String(values[name] ?? ""));
+      }
+
+      function applyStaticI18n() {
+        document.querySelectorAll("[data-i18n]").forEach((element) => {
+          element.textContent = t(element.dataset.i18n);
+        });
+        document.querySelectorAll("[data-i18n-html]").forEach((element) => {
+          element.innerHTML = t(element.dataset.i18nHtml);
+        });
+        document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
+          element.setAttribute("placeholder", t(element.dataset.i18nPlaceholder));
+        });
+        document.querySelectorAll("[data-i18n-title]").forEach((element) => {
+          element.setAttribute("title", t(element.dataset.i18nTitle));
+        });
+      }
+
+      function toggleLanguageButtonState() {
+        document.querySelectorAll('#languageToggle [data-action="set-language"]').forEach((button) => {
+          const active = button.dataset.lang === state.language;
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+      }
+
+      function applyLanguage(language) {
+        state.language = language === "en" ? "en" : "zh";
+        localStorage.setItem("skill-manage-language", state.language);
+        document.documentElement.lang = state.language === "en" ? "en" : "zh-CN";
+        document.title = "🗃️ Skill Manage";
+        applyStaticI18n();
+        toggleLanguageButtonState();
+      }
+
+      function findAgent(agentCode) {
+        return state.agents.find((item) => item.agent_code === agentCode) || null;
+      }
+
+      function visibleAgents() {
+        return state.agents.filter((item) => Number(item.is_visible) === 1);
+      }
+
+      function ensureCurrentAgentSelection() {
+        const visible = visibleAgents();
+        if (!visible.length) {
+          state.currentAgentCode = "";
+          return;
+        }
+        if (!visible.some((item) => item.agent_code === state.currentAgentCode)) {
+          state.currentAgentCode = visible[0].agent_code;
+        }
+      }
+
+      function currentAgent() {
+        ensureCurrentAgentSelection();
+        return findAgent(state.currentAgentCode);
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;");
+      }
+
+      function escapeRegExp(value) {
+        return String(value ?? "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      }
+
+      function highlightText(value, keyword) {
+        const text = String(value ?? "");
+        const query = String(keyword ?? "").trim();
+        if (!query) {
+          return escapeHtml(text);
+        }
+
+        const regex = new RegExp(escapeRegExp(query), "ig");
+        let result = "";
+        let lastIndex = 0;
+        for (const match of text.matchAll(regex)) {
+          const index = match.index ?? 0;
+          result += escapeHtml(text.slice(lastIndex, index));
+          result += `<span class="search-hit">${escapeHtml(match[0])}</span>`;
+          lastIndex = index + match[0].length;
+        }
+        result += escapeHtml(text.slice(lastIndex));
+        return result;
+      }
+
+      function registerCardDetail(detail) {
+        state.cardDetailSeq += 1;
+        const id = `skill-card-${state.cardDetailSeq}`;
+        state.cardDetails[id] = detail;
+        return id;
+      }
+
+      function renderPathRow({ label, fullPath, highlightedPath }) {
+        const safePath = String(fullPath || "");
+        const content = highlightedPath || escapeHtml(safePath);
+        return `
+          <div class="skill-path-row">
+            <div class="skill-card-label">${escapeHtml(label || t("common.path"))}</div>
+            <div class="skill-path-main">
+              <div class="path path-ellipsis" title="${escapeHtml(safePath)}" data-action="copy-path" data-path="${escapeHtml(safePath)}">${content}</div>
+              <button class="secondary path-copy" type="button" data-action="copy-path" data-path="${escapeHtml(safePath)}">${escapeHtml(t("action.copy"))}</button>
+            </div>
+          </div>
+        `;
+      }
+
+      function pathLeafName(value) {
+        const text = String(value || "");
+        const trimmed = text.replace(/[\\/]+$/, "");
+        if (!trimmed) {
+          return text || "-";
+        }
+        const segments = trimmed.split(/[\\/]/).filter(Boolean);
+        return segments[segments.length - 1] || trimmed;
+      }
+
+      function openSkillDetailDialog(cardId) {
+        const detail = state.cardDetails[cardId];
+        const dialog = $("#skillDetailDialog");
+        const titleEl = $("#skillDetailTitle");
+        const bodyEl = $("#skillDetailBody");
+        if (!detail || !dialog || !titleEl || !bodyEl) {
+          return;
+        }
+        titleEl.textContent = detail.title || t("dialog.skillDetail.title");
+        bodyEl.textContent = JSON.stringify(detail, null, 2);
+        if (typeof dialog.showModal === "function") {
+          dialog.showModal();
+        }
+      }
+
+      function openScanRootEditDialog(rootPath) {
+        const dialog = $("#scanRootEditDialog");
+        const oldPathInput = $("#scanRootEditOldPath");
+        const modeInput = $("#scanRootEditMode");
+        const pathInput = $("#scanRootEditPath");
+        const noteInput = $("#scanRootEditNote");
+        const root = state.scanRoots.find((item) => item.path === rootPath);
+        if (!dialog || !oldPathInput || !modeInput || !pathInput || !noteInput || !root) {
+          return;
+        }
+        oldPathInput.value = root.path || "";
+        modeInput.value = root.mode || "skill_root";
+        pathInput.value = root.path || "";
+        noteInput.value = root.note || "";
+        if (typeof dialog.showModal === "function") {
+          dialog.showModal();
+        }
+      }
+
+      function applyOperationLogPayload(payload, { append = false } = {}) {
+        const items = Array.isArray(payload?.items) ? payload.items : [];
+        const pagination = payload?.pagination || {};
+        state.operationLogs = append ? [...state.operationLogs, ...items] : items;
+        state.operationLogPage = pagination.page || (append ? state.operationLogPage + 1 : 1);
+        state.operationLogHasNext = Boolean(pagination.has_next);
+      }
+
+      async function fetchOperationLogs({ page = 1, append = false } = {}) {
+        if (state.operationLogLoading) {
+          return;
+        }
+        state.operationLogLoading = true;
+        renderLogs();
+        try {
+          const payload = await apiRequest(`/api/operation-logs?page=${encodeURIComponent(page)}&page_size=20`);
+          applyOperationLogPayload(payload, { append });
+        } finally {
+          state.operationLogLoading = false;
+          renderLogs();
+        }
+      }
+
+      function mountedLinkedAgents(skillPath) {
+        return state.agents
+          .map((agent) => {
+            const hasMounted = (state.agentEntries[agent.agent_code] || []).some((entry) => entry.status === "linked" && entry.target_path === skillPath);
+            return hasMounted ? agent.display_name : null;
+          })
+          .filter(Boolean);
+      }
+
+      function openMoveSkillDialog({ mode, skillPath = "", currentRootPath = "", agentCode = "", linkPath = "" }) {
+        const dialog = $("#moveSkillDialog");
+        const body = $("#moveSkillDialogBody");
+        const select = $("#moveSkillDialogSelect");
+        const skill = state.localSkills.find((item) => item.path === skillPath);
+        const roots = state.scanRoots.filter((root) => root.mode === "skill_root" && root.status === "ok" && root.path !== currentRootPath);
+        if (!skill || !dialog || !body || !select) {
+          return;
+        }
+        if (!roots.length) {
+          return;
+        }
+
+        state.moveDialog = {
+          mode,
+          agentCode,
+          linkPath,
+          skillPath,
+          currentRootPath,
+          selectedRootPath: roots[0].path
+        };
+
+        body.innerHTML = `
+          ${t("dialog.moveSkill.body", {
+            skillPath: escapeHtml(skill.path),
+            currentRootPath: escapeHtml(currentRootPath),
+            result: mode === "agent-direct" ? t("dialog.moveSkill.result.agentDirect") : t("dialog.moveSkill.result.local")
+          })}
+        `;
+        select.innerHTML = roots.map((root) => `<option value="${escapeHtml(root.path)}">${escapeHtml(root.path)}</option>`).join("");
+        select.value = roots[0].path;
+        if (typeof dialog.showModal === "function") {
+          dialog.showModal();
+        }
+      }
+
+      async function confirmMoveSkill() {
+        const mode = state.moveDialog.mode;
+        const agentCode = state.moveDialog.agentCode;
+        const linkPath = state.moveDialog.linkPath;
+        const skillPath = state.moveDialog.skillPath;
+        const rootPath = $("#moveSkillDialogSelect")?.value || state.moveDialog.selectedRootPath;
+        const dialog = $("#moveSkillDialog");
+        if (!rootPath || (!skillPath && !linkPath)) {
+          return;
+        }
+
+        const mountedAgents = mode === "local" ? mountedLinkedAgents(skillPath) : [];
+        if (mountedAgents.length) {
+          const confirmed = window.confirm(t("dialog.moveSkill.confirmMounted", { agents: mountedAgents.join("、") }));
+          if (!confirmed) {
+            return;
+          }
+        }
+
+        if (dialog?.open) {
+          dialog.close();
+        }
+
+        if (mode === "agent-direct") {
+          await withRefresh(() => apiRequest(`/api/agents/${encodeURIComponent(agentCode)}/move-direct-to-local`, {
+            method: "POST",
+            body: {
+              link_path: linkPath,
+              root_path: rootPath
+            }
+          }), `已移动 Skill：${linkPath}`);
+          return;
+        }
+
+        await withRefresh(() => apiRequest("/api/local-skills/move", {
+          method: "POST",
+          body: {
+            skill_path: skillPath,
+            root_path: rootPath
+          }
+        }), `已移动 Skill：${skillPath}`);
+      }
+
+      function applyTheme(theme) {
+        state.theme = theme === "dark" ? "dark" : "light";
+        document.documentElement.dataset.theme = state.theme;
+        localStorage.setItem("skill-manage-theme", state.theme);
+        localStorage.removeItem("skill-manager-theme");
+        const sun = $("#themeSun");
+        const moon = $("#themeMoon");
+        if (sun && moon) {
+          sun.classList.toggle("active", state.theme === "light");
+          moon.classList.toggle("active", state.theme === "dark");
+        }
+      }
+
+
+      function applyServerState(payload) {
+        state.runtime = {
+          connected: true,
+          error: "",
+          server_url: payload.runtime?.server_url || state.apiBase || "",
+          htmlPath: payload.runtime?.html_path || "",
+          appDir: payload.runtime?.app_dir || "",
+          dbPath: payload.runtime?.db_path || "",
+          pythonVersion: payload.runtime?.python_version || "",
+          scriptPath: payload.runtime?.script_path || ""
+        };
+        state.scanRoots = payload.scanRoots || [];
+        state.localSkills = payload.localSkills || [];
+        state.agents = payload.agents || [];
+        state.agentTargets = payload.agentTargets || {};
+        state.agentEntries = payload.agentEntries || {};
+        applyOperationLogPayload(payload.operationLogs || {}, { append: false });
+        ensureCurrentAgentSelection();
+      }
+
+      async function apiRequest(endpoint, options = {}) {
+        const url = `${state.apiBase}${endpoint}`;
+        const response = await fetch(url, {
+          method: options.method || "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...(options.headers || {})
+          },
+          body: options.body ? JSON.stringify(options.body) : undefined
+        });
+
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok || payload.ok === false) {
+          throw new Error(payload.error || t("error.requestFailed", { status: response.status }));
+        }
+        return payload;
+      }
+
+      async function fetchState() {
+        const payload = await apiRequest("/api/state");
+        applyServerState(payload.state);
+      }
+
+      function statusBadge(status) {
+        const mapping = {
+          ok: [t("status.ok"), "ok"],
+          missing: [t("status.missing"), "danger"],
+          linked: [t("status.linked"), "ok"],
+          direct: [t("status.direct"), "info"],
+          invalid_missing_target: [t("status.invalid_missing_target"), "danger"],
+          invalid_missing_skill_md: [t("status.invalid_missing_skill_md"), "warn"],
+          idle: [t("status.idle"), "info"],
+          error: [t("status.error"), "danger"]
+        };
+        const [label, type] = mapping[status] || [status, "info"];
+        return `<span class="badge ${type}">${escapeHtml(label)}</span>`;
+      }
+
+      function currentSkillCategory(entry) {
+        if (entry?.status === "direct") {
+          return "normal";
+        }
+        if (entry?.status === "linked") {
+          return "mounted";
+        }
+        if (entry?.link_kind === "symlink" && String(entry?.status || "").startsWith("invalid_")) {
+          return "invalid";
+        }
+        return "";
+      }
+
+      function currentSkillCategoryLabel(entry) {
+        const mapping = {
+          normal: t("category.normal"),
+          mounted: t("category.mounted"),
+          invalid: t("category.invalid")
+        };
+        return mapping[currentSkillCategory(entry)] || "";
+      }
+
+      function currentSkillTags(entry, localSkill) {
+        const category = currentSkillCategory(entry);
+        if (!category) {
+          return [];
+        }
+        if (category === "mounted") {
+          const tags = [{ label: t("category.mounted"), type: "mounted" }];
+          if (!localSkill || localSkill.status === "ok") {
+            tags.unshift({ label: t("category.normal"), type: "normal" });
+          }
+          return tags;
+        }
+        if (category === "normal") {
+          return [{ label: t("category.normal"), type: "normal" }];
+        }
+        if (category === "invalid") {
+          return [{ label: t("category.invalid"), type: "invalid" }];
+        }
+        return [];
+      }
+
+      function displayStatusReason(reason) {
+        const normalized = String(reason || "").trim();
+        if (
+          !normalized
+          || normalized === "软链接正常"
+          || normalized === "软连接正常"
+          || normalized === "全局目录中的真实技能目录"
+        ) {
+          return "";
+        }
+        return normalized;
+      }
+
+      function renderOverview() {
+        const activeSkills = state.localSkills.filter((item) => item.status === "ok").length;
+        const missingSkills = state.localSkills.filter((item) => item.status !== "ok").length;
+        const invalidLinks = state.agents.reduce((count, agent) => count + (state.agentEntries[agent.agent_code] || []).filter((entry) => entry.status.startsWith("invalid_")).length, 0);
+        const managedLinks = state.agents.reduce((count, agent) => count + (state.agentEntries[agent.agent_code] || []).filter((entry) => Number(entry.is_managed) === 1).length, 0);
+
+        $("#overviewStats").innerHTML = `
+          <div class="stat">
+            <span class="muted">${escapeHtml(state.language === "en" ? "Scan Sources" : "扫描源")}</span>
+            <strong>${state.scanRoots.length}</strong>
+            <span class="muted">${escapeHtml(state.language === "en" ? "SKILL repository root configuration" : "SKILL仓库入口配置")}</span>
+          </div>
+          <div class="stat">
+            <span class="muted">${escapeHtml(t("tab.local"))}</span>
+            <strong>${activeSkills}</strong>
+            <span class="muted">${escapeHtml(state.language === "en" ? `Healthy, missing: ${missingSkills}` : `状态正常，missing: ${missingSkills}`)}</span>
+          </div>
+          <div class="stat">
+            <span class="muted">${escapeHtml(state.language === "en" ? "Agent Count" : "Agent 数量")}</span>
+            <strong>${state.agents.length}</strong>
+            <span class="muted">${escapeHtml(state.language === "en" ? `Visible ${visibleAgents().length}` : `显示中 ${visibleAgents().length} 个`)}</span>
+          </div>
+          <div class="stat">
+            <span class="muted">${escapeHtml(state.language === "en" ? "Managed Links" : "已托管链接")}</span>
+            <strong>${managedLinks}</strong>
+            <span class="muted">${escapeHtml(state.language === "en" ? "Symlinks inside agent directories" : "agent 全局目录中的软链接")}</span>
+          </div>
+          <div class="stat">
+            <span class="muted">${escapeHtml(state.language === "en" ? "Invalid Links" : "失效链接")}</span>
+            <strong>${invalidLinks}</strong>
+            <span class="muted">${escapeHtml(state.language === "en" ? "Can be cleaned in one click" : "可一键清理")}</span>
+          </div>
+        `;
+      }
+
+      function renderRuntime() {
+        const banner = $("#runtimeBanner");
+        if (!banner) {
+          return;
+        }
+      }
+
+      function renderScanRoots() {
+        const container = $("#scanRootList");
+        if (!state.scanRoots.length) {
+          container.innerHTML = `<div class="empty">${t("local.scanRoot.empty")}</div>`;
+          return;
+        }
+
+        container.innerHTML = state.scanRoots.map((root) => `
+          <div class="list-item skill-card" data-card-id="${registerCardDetail({
+            title: `${t("local.scanRoot.kicker")}: ${pathLeafName(root.path) || "-"}`,
+            type: "scan_root",
+            path: root.path || "",
+            mode: root.mode || "",
+            note: root.note || "",
+            status: root.status || "",
+            last_scan_at: root.last_scan_at || "",
+            last_error: root.last_error || "",
+            skill_count: root.skill_count,
+            updated_at: root.updated_at || "",
+            row: root
+          })}" data-scan-root-path="${escapeHtml(root.path)}">
+            <div class="skill-card-head">
+              <div class="skill-card-title">
+                <div class="skill-card-kicker">${escapeHtml(t("local.scanRoot.kicker"))}</div>
+                <div class="skill-card-mainline">
+                  <strong>${escapeHtml(pathLeafName(root.path))}</strong>
+                </div>
+              </div>
+            </div>
+            <div class="skill-card-meta">
+              ${statusBadge(root.status)}
+              <span class="pill">${escapeHtml(root.mode)}</span>
+              ${root.mode === "skill_dir" ? `<span class="pill">${escapeHtml(t("local.scanRoot.skillCount", { count: root.skill_count ?? 0 }))}</span>` : ""}
+              ${root.note ? `<span class="pill">${escapeHtml(root.note)}</span>` : ""}
+              <span class="note">${escapeHtml(t("local.scanRoot.lastScan", { time: root.last_scan_at || "-" }))}</span>
+            </div>
+            <div class="skill-card-section">${renderPathRow({ label: t("common.fullPath"), fullPath: root.path })}</div>
+            <div class="skill-card-section">
+              <div class="skill-card-label">${escapeHtml(t("local.scanRoot.statusTitle"))}</div>
+              <div class="description">
+                ${root.last_error ? escapeHtml(t("local.scanRoot.error", { error: root.last_error })) : escapeHtml(t("local.scanRoot.ok"))}
+              </div>
+            </div>
+            <div class="skill-card-actions">
+                <button class="secondary" data-action="scan-root" data-path="${escapeHtml(root.path)}" data-mode="${escapeHtml(root.mode)}">${escapeHtml(state.language === "en" ? "Rescan" : "重扫")}</button>
+                <button class="danger" data-action="remove-root" data-path="${escapeHtml(root.path)}">${escapeHtml(state.language === "en" ? "Remove" : "移除")}</button>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      function renderLocalSkills() {
+        const container = $("#localSkillList");
+        const keyword = state.search.trim().toLowerCase();
+        const rows = state.localSkills.filter((skill) => {
+          if (!keyword) {
+            return true;
+          }
+          return skill.name.toLowerCase().includes(keyword)
+            || skill.path.toLowerCase().includes(keyword)
+            || skill.root_path.toLowerCase().includes(keyword)
+            || (skill.description || "").toLowerCase().includes(keyword);
+        });
+
+        if (!rows.length) {
+          container.innerHTML = `<div class="empty">${escapeHtml(t("local.skill.empty"))}</div>`;
+          return;
+        }
+
+        container.innerHTML = rows.map((skill) => `
+          <div class="list-item skill-card" data-card-id="${registerCardDetail({
+            title: skill.name || "-",
+            type: "local_skill",
+            name: skill.name || "",
+            status: skill.status || "",
+            path: skill.path || "",
+            root_path: skill.root_path || "",
+            description: skill.description || "",
+            updated_at: skill.updated_at || "",
+            row: skill
+          })}">
+            <div class="skill-card-head">
+              <div class="skill-card-title">
+                <div class="skill-card-mainline">
+                  <strong>${highlightText(skill.name, keyword)}</strong>
+                </div>
+              </div>
+            </div>
+            <div class="skill-card-meta">
+              ${statusBadge(skill.status)}
+            </div>
+            <div class="skill-card-section">${renderPathRow({ label: t("common.path"), fullPath: skill.path, highlightedPath: highlightText(skill.path, keyword) })}</div>
+            <div class="skill-card-actions">
+              ${skill.status === "ok" ? `<button class="warn" data-action="move-local-skill" data-skill="${escapeHtml(skill.path)}" data-root="${escapeHtml(skill.root_path)}">${escapeHtml(t("action.move"))}</button>` : ""}
+              <button class="danger" data-action="delete-local-skill" data-skill="${escapeHtml(skill.path)}">${escapeHtml(t("action.deleteRecord"))}</button>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      function renderAgentHoverMenu(agents, activeAgentCode) {
+        return `
+          <div id="agentHoverMenu" class="agent-hover-menu">
+            ${agents.map((item) => `
+              <button
+                class="agent-hover-option ${item.agent_code === activeAgentCode ? "active" : ""}"
+                type="button"
+                data-action="select-agent"
+                data-agent="${escapeHtml(item.agent_code)}"
+              >
+                <strong>${escapeHtml(item.display_name || item.agent_code)}</strong>
+                <small>${escapeHtml(item.configured_path || item.default_path || "-")}</small>
+              </button>
+            `).join("")}
+          </div>
+        `;
+      }
+
+      function renderTabsBar() {
+        const host = $("#topTabs");
+        if (!host) {
+          return;
+        }
+        host.innerHTML = `
+          <button class="tab-button ${state.activeTab === "local" ? "active" : ""}" data-tab="local">${escapeHtml(t("tab.local"))}</button>
+          <button class="tab-button ${state.activeTab === "agent-list" ? "active" : ""}" data-tab="agent-list">${escapeHtml(t("tab.agentList"))}</button>
+          <button class="tab-button ${state.activeTab === "agent-manage" ? "active" : ""}" data-tab="agent-manage">${escapeHtml(t("tab.agentManage"))}</button>
+          <button class="tab-button ${state.activeTab === "system" ? "active" : ""}" data-tab="system">${escapeHtml(t("tab.system"))}</button>
+        `;
+      }
+
+      function renderAgentInlineSwitcher(agent, agents) {
+        return `
+          <div id="agentInlineSwitcher" class="agent-inline-switcher ${state.agentSwitcherOpen ? "open" : ""}">
+            <button
+              class="secondary agent-inline-trigger"
+              type="button"
+              aria-haspopup="true"
+              aria-expanded="${state.agentSwitcherOpen ? "true" : "false"}"
+              data-action="toggle-agent-menu"
+            >
+              <span>${escapeHtml(agent.display_name || agent.agent_code)}</span>
+              <span class="muted">${escapeHtml(t("agentList.switch"))}</span>
+            </button>
+            ${renderAgentHoverMenu(agents, agent.agent_code)}
+          </div>
+        `;
+      }
+
+      function resetAgentManageForm() {
+        const editingCode = $("#agentManageEditingCode");
+        const codeInput = $("#agentManageCode");
+        const nameInput = $("#agentManageName");
+        const defaultInput = $("#agentManageDefaultPath");
+        const configuredInput = $("#agentManageConfiguredPath");
+        const title = $("#agentManageFormTitle");
+        const submit = $("#agentManageSubmit");
+        if (!editingCode || !codeInput || !nameInput || !defaultInput || !configuredInput || !title || !submit) {
+          return;
+        }
+        editingCode.value = "";
+        codeInput.value = "";
+        codeInput.readOnly = false;
+        nameInput.value = "";
+        defaultInput.value = "";
+        configuredInput.value = "";
+        title.textContent = t("agentManage.form.newTitle");
+        submit.textContent = t("action.createAgent");
+      }
+
+      function populateAgentManageForm(agentCode) {
+        const agent = findAgent(agentCode);
+        const editingCode = $("#agentManageEditingCode");
+        const codeInput = $("#agentManageCode");
+        const nameInput = $("#agentManageName");
+        const defaultInput = $("#agentManageDefaultPath");
+        const configuredInput = $("#agentManageConfiguredPath");
+        const title = $("#agentManageFormTitle");
+        const submit = $("#agentManageSubmit");
+        if (!agent || !editingCode || !codeInput || !nameInput || !defaultInput || !configuredInput || !title || !submit) {
+          return;
+        }
+        editingCode.value = agent.agent_code || "";
+        codeInput.value = agent.agent_code || "";
+        codeInput.readOnly = true;
+        nameInput.value = agent.display_name || "";
+        defaultInput.value = agent.default_path || "";
+        configuredInput.value = agent.configured_path || "";
+        title.textContent = t("agentManage.editTitle", { name: agent.display_name || agent.agent_code });
+        submit.textContent = t("action.saveUpdate");
+      }
+
+      function renderAgentManage() {
+        const summary = $("#agentManageSummary");
+        const list = $("#agentManageList");
+        if (!summary || !list) {
+          return;
+        }
+
+        const builtinCount = state.agents.filter((item) => Number(item.is_builtin) === 1).length;
+        const visibleCount = visibleAgents().length;
+        summary.innerHTML = `
+          <span class="pill">${escapeHtml(t("agentManage.summary.total", { count: state.agents.length }))}</span>
+          <span class="pill">${escapeHtml(t("agentManage.summary.builtin", { count: builtinCount }))}</span>
+          <span class="pill">${escapeHtml(t("agentManage.summary.visible", { count: visibleCount }))}</span>
+          <span class="pill">${escapeHtml(t("agentManage.summary.hidden", { count: Math.max(state.agents.length - visibleCount, 0) }))}</span>
+        `;
+
+        if (!state.agents.length) {
+          list.innerHTML = `<div class="empty">${escapeHtml(t("agentManage.empty"))}</div>`;
+          return;
+        }
+
+        list.innerHTML = state.agents.map((agent) => `
+          <div class="list-item skill-card" data-card-id="${registerCardDetail({
+            title: agent.display_name || agent.agent_code || "-",
+            type: "agent_manage",
+            agent: agent.agent_code || "",
+            row: agent
+          })}">
+            <div class="skill-card-head">
+              <div class="skill-card-title">
+                <div class="skill-card-kicker">${escapeHtml(t("agentManage.kicker"))}</div>
+                <div class="skill-card-mainline">
+                  <strong>${escapeHtml(agent.display_name || agent.agent_code)}</strong>
+                </div>
+              </div>
+            </div>
+            <div class="skill-card-meta">
+              <span class="pill">${escapeHtml(agent.agent_code || "-")}</span>
+              <span class="badge ${Number(agent.is_visible) === 1 ? "ok" : "warn"}">${Number(agent.is_visible) === 1 ? escapeHtml(t("agentManage.visible")) : escapeHtml(t("agentManage.hidden"))}</span>
+            </div>
+            <div class="skill-card-section">
+              ${renderPathRow({ label: t("common.currentPath"), fullPath: agent.configured_path || "-" })}
+              ${renderPathRow({ label: t("common.defaultPath"), fullPath: agent.default_path || "-" })}
+            </div>
+            <div class="skill-card-actions">
+              <button class="secondary" type="button" data-action="edit-agent" data-agent="${escapeHtml(agent.agent_code)}">${escapeHtml(t("action.edit"))}</button>
+              <button
+                class="${Number(agent.is_visible) === 1 ? "warn" : "secondary"}"
+                type="button"
+                data-action="toggle-agent-visibility"
+                data-agent="${escapeHtml(agent.agent_code)}"
+                data-visible="${Number(agent.is_visible) === 1 ? "0" : "1"}"
+              >
+                ${Number(agent.is_visible) === 1 ? escapeHtml(t("action.hide")) : escapeHtml(t("action.show"))}
+              </button>
+              ${Number(agent.is_visible) === 1 ? `<button type="button" data-action="select-agent" data-agent="${escapeHtml(agent.agent_code)}">${escapeHtml(t("action.setCurrent"))}</button>` : ""}
+              <button class="danger" type="button" data-action="delete-agent" data-agent="${escapeHtml(agent.agent_code)}">${escapeHtml(t("action.delete"))}</button>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      function renderAgentPanels() {
+        const host = $("#agentListContent");
+        if (!host) {
+          return;
+        }
+
+        const visible = visibleAgents();
+        if (!visible.length) {
+          host.innerHTML = `
+            <article class="card">
+              <div class="section-head">
+                <div>
+                  <h2>${escapeHtml(t("agentList.emptyTitle"))}</h2>
+                  <div class="muted">${escapeHtml(t("agentList.emptyNote"))}</div>
+                </div>
+                <div class="section-actions">
+                  <button type="button" data-tab="agent-manage">${escapeHtml(t("action.goToAgentManage"))}</button>
+                </div>
+              </div>
+            </article>
+          `;
+          return;
+        }
+
+        const agent = currentAgent();
+        const target = state.agentTargets[agent?.agent_code || ""] || agent || {};
+        const entries = state.agentEntries[agent?.agent_code || ""] || [];
+        const localSkillMap = new Map(state.localSkills.map((skill) => [skill.path, skill]));
+        const linkedTargets = new Map(entries.filter((entry) => entry.status === "linked" || entry.status === "direct").map((entry) => [entry.target_path, entry]));
+        const currentEntries = entries.filter((entry) => Boolean(currentSkillCategory(entry)));
+        const libraryQuery = (state.agentLibrarySearch[agent.agent_code] || "").trim().toLowerCase();
+        const currentQuery = (state.agentCurrentSearch[agent.agent_code] || "").trim().toLowerCase();
+        const libraryRows = libraryQuery
+          ? state.localSkills
+            .filter((skill) => {
+              if (skill.status !== "ok" || linkedTargets.has(skill.path)) {
+                return false;
+              }
+              return skill.name.toLowerCase().includes(libraryQuery)
+                || skill.path.toLowerCase().includes(libraryQuery)
+                || skill.root_path.toLowerCase().includes(libraryQuery)
+                || (skill.description || "").toLowerCase().includes(libraryQuery);
+            })
+            .slice(0, 10)
+          : [];
+        const filteredCurrentEntries = currentQuery
+          ? currentEntries.filter((entry) => {
+            const localSkill = localSkillMap.get(entry.target_path);
+            return entry.link_name.toLowerCase().includes(currentQuery)
+              || entry.link_path.toLowerCase().includes(currentQuery)
+              || entry.target_path.toLowerCase().includes(currentQuery)
+              || entry.status.toLowerCase().includes(currentQuery)
+              || entry.status_reason.toLowerCase().includes(currentQuery)
+              || currentSkillCategoryLabel(entry).toLowerCase().includes(currentQuery)
+              || (Number(entry.is_managed) ? (state.language === "en" ? "managed" : "已托管") : (state.language === "en" ? "external" : "外部发现")).includes(currentQuery)
+              || (localSkill?.description || "").toLowerCase().includes(currentQuery);
+          })
+          : currentEntries;
+        const invalidCount = entries.filter((entry) => entry.status.startsWith("invalid_")).length;
+        const linkedCount = entries.filter((entry) => entry.status === "linked").length;
+        const directCount = entries.filter((entry) => entry.status === "direct").length;
+        const availableLocalCount = state.localSkills.filter((skill) => {
+          if (skill.status !== "ok" || linkedTargets.has(skill.path)) {
+            return false;
+          }
+          return true;
+        }).length;
+
+        host.innerHTML = `
+          <article class="card agent-top-card">
+            <div class="section-head">
+              <div>
+                <h2>${escapeHtml(t("agentList.focusTitle"))}</h2>
+                <div class="muted">${escapeHtml(t("agentList.focusNote", { name: agent.display_name || agent.agent_code }))}</div>
+              </div>
+            </div>
+          </article>
+          <article class="card agent-top-card">
+            <div class="section-head">
+              <div class="agent-title-group">
+                <h2>${escapeHtml(t("agentList.currentTitle"))}</h2>
+                ${renderAgentInlineSwitcher(agent, visible)}
+              </div>
+            </div>
+            <div class="agent-top-grid">
+              <div class="field-grid">
+                <div class="label">${escapeHtml(t("agentList.currentConfig"))}</div>
+                <input id="agent-path-${agent.agent_code}" type="text" value="${escapeHtml(target.configured_path || "")}" placeholder="/Users/you/.${escapeHtml(agent.agent_code)}/skills">
+
+                <div class="label">${escapeHtml(t("common.defaultPath"))}</div>
+                <div class="note">${escapeHtml(target.default_path || "-")}</div>
+              </div>
+              <div class="agent-side-meta">
+                <div class="agent-summary">
+                  <span class="pill">${escapeHtml(t("agentList.linked", { count: linkedCount }))}</span>
+                  <span class="pill">${escapeHtml(t("agentList.invalid", { count: invalidCount }))}</span>
+                  <span class="pill">${escapeHtml(t("agentList.direct", { count: directCount }))}</span>
+                  <span class="pill">${escapeHtml(t("agentList.searchReady", { count: availableLocalCount }))}</span>
+                  <span class="pill">${escapeHtml(t("agentList.lastScan", { time: target.last_scan_at || "-" }))}</span>
+                </div>
+                <div class="note">${escapeHtml(t("agentList.summaryNote", { name: agent.display_name }))}</div>
+              </div>
+              <div class="agent-actions">
+                <button data-action="save-agent-path" data-agent="${escapeHtml(agent.agent_code)}" title="${escapeHtml(t("agentList.savePathTitle"))}">${escapeHtml(t("action.savePath"))}</button>
+                <button class="secondary" data-action="scan-agent" data-agent="${escapeHtml(agent.agent_code)}" title="${escapeHtml(t("agentList.refreshTitle"))}">${escapeHtml(t("action.refreshFolder"))}</button>
+                <button class="secondary" data-action="scan-agent-default-to-local" data-agent="${escapeHtml(agent.agent_code)}" title="${escapeHtml(t("agentList.scanCurrentToRepositoryTitle"))}">${escapeHtml(t("action.addToRepository"))}</button>
+                <button class="warn" data-action="cleanup-invalid" data-agent="${escapeHtml(agent.agent_code)}" title="${escapeHtml(t("agentList.cleanupTitle"))}">${escapeHtml(t("action.cleanupInvalid"))}</button>
+              </div>
+            </div>
+          </article>
+          <article class="card">
+            <div class="section-head">
+              <h2>${escapeHtml(t("similarity.title"))}</h2>
+            </div>
+            <div class="field-grid">
+              <div class="label">${escapeHtml(t("similarity.threshold"))}</div>
+              <div style="display:flex;align-items:center;gap:12px;">
+                <input id="similarity-slider-${agent.agent_code}" type="range" min="0.2" max="1" step="0.05" value="${state.similarityThresholds[agent.agent_code] ?? 0.5}" data-similarity-slider="${escapeHtml(agent.agent_code)}" style="flex:1;">
+                <span id="similarity-value-${agent.agent_code}" style="min-width:42px;text-align:center;font-weight:700;">${(state.similarityThresholds[agent.agent_code] ?? 0.5).toFixed(2)}</span>
+              </div>
+            </div>
+            <div class="row-actions">
+              <button data-action="find-similar" data-agent="${escapeHtml(agent.agent_code)}" id="find-similar-btn-${agent.agent_code}">${escapeHtml(t("action.scanSimilar"))}</button>
+              <span class="muted" id="similar-status-${agent.agent_code}">${escapeHtml(t("similarity.agentStatus"))}</span>
+            </div>
+            <div id="similar-results-${agent.agent_code}" style="display:none;"></div>
+          </article>
+          <div class="agent-layout single-column">
+            <article class="card">
+              <div class="section-head">
+                <h2>${escapeHtml(t("agentList.addSkillTitle"))}</h2>
+                <div class="muted">${escapeHtml(t("agentList.addSkillNote"))}</div>
+              </div>
+              <div class="list skill-grid">
+                <div class="skill-search-shell">
+                  <input id="agent-library-search-${agent.agent_code}" data-agent-library-search="${escapeHtml(agent.agent_code)}" type="text" value="${escapeHtml(state.agentLibrarySearch[agent.agent_code] || "")}" placeholder="${escapeHtml(t("placeholder.filterAddableSkills"))}">
+                </div>
+                ${!libraryQuery ? `<div class="empty">${escapeHtml(t("agentList.addSkillEmpty"))}</div>` : ""}
+                ${libraryQuery && !libraryRows.length ? `<div class="empty">${escapeHtml(t("agentList.addSkillNotFound"))}</div>` : ""}
+                ${libraryRows.map((skill) => `
+                  <div class="list-item skill-card" data-card-id="${registerCardDetail({
+                    title: skill.name || "-",
+                    type: "library_match",
+                    agent: agent.agent_code,
+                    name: skill.name || "",
+                    status: skill.status || "",
+                    path: skill.path || "",
+                    root_path: skill.root_path || "",
+                    description: skill.description || "",
+                    row: skill
+                  })}">
+                    <div class="skill-card-head">
+                      <div class="skill-card-title">
+                        <div class="skill-card-mainline">
+                          <strong>${highlightText(skill.name, libraryQuery)}</strong>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="skill-card-meta">
+                      ${statusBadge(skill.status)}
+                      <span class="pill">${escapeHtml(t("agentList.repositoryPill"))}</span>
+                    </div>
+                    <div class="skill-card-section">${renderPathRow({ label: t("common.path"), fullPath: skill.path, highlightedPath: highlightText(skill.path, libraryQuery) })}</div>
+                    <div class="skill-card-actions">
+                      <button data-action="link-skill" data-agent="${escapeHtml(agent.agent_code)}" data-skill="${escapeHtml(skill.path)}">${escapeHtml(t("action.mountToAgent", { name: agent.display_name }))}</button>
+                    </div>
+                  </div>
+                `).join("")}
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="section-head">
+                <h2>${escapeHtml(t("agentList.currentFolderTitle", { name: agent.display_name }))}</h2>
+                <div class="muted">${escapeHtml(t("agentList.currentFolderNote", { name: agent.display_name }))}</div>
+              </div>
+              <div class="list skill-grid">
+                <div class="skill-search-shell">
+                  <input id="agent-current-search-${agent.agent_code}" data-agent-current-search="${escapeHtml(agent.agent_code)}" type="text" value="${escapeHtml(state.agentCurrentSearch[agent.agent_code] || "")}" placeholder="${escapeHtml(t("placeholder.filterCurrentSkills"))}">
+                </div>
+                ${filteredCurrentEntries.length ? filteredCurrentEntries.map((entry) => {
+                  const localSkill = localSkillMap.get(entry.target_path);
+                  const category = currentSkillCategory(entry);
+                  const categoryLabel = currentSkillCategoryLabel(entry);
+                  const tags = currentSkillTags(entry, localSkill);
+                  const statusReason = displayStatusReason(entry.status_reason);
+                  const isDirect = category === "normal";
+                  const moveRoots = isDirect
+                    ? state.scanRoots.filter((root) => root.mode === "skill_root" && root.status === "ok" && root.path !== entry.link_path && root.path !== entry.target_path && root.path !== (target.detected_path || target.configured_path))
+                    : [];
+                  return `
+                    <div class="list-item skill-card" data-card-id="${registerCardDetail({
+                      title: entry.link_name || "-",
+                      type: "agent_current_skill",
+                      agent: agent.agent_code,
+                      name: entry.link_name || "",
+                      category: category,
+                      category_label: categoryLabel,
+                      status: entry.status || "",
+                      link_kind: entry.link_kind || "",
+                      is_managed: Number(entry.is_managed) === 1,
+                      status_reason: entry.status_reason || "",
+                      link_path: entry.link_path || "",
+                      target_path: entry.target_path || "",
+                      local_skill: localSkill || null,
+                      row: entry
+                    })}">
+                      <div class="skill-card-head">
+                        <div class="skill-card-title">
+                          <div class="skill-card-mainline">
+                            <strong>${highlightText(entry.link_name, currentQuery)}</strong>
+                          </div>
+                        </div>
+                        ${tags.length ? `<div class="badge-row">${tags.map((tag) => `<span class="skill-card-tag category-${escapeHtml(tag.type)}">${escapeHtml(tag.label)}</span>`).join("")}</div>` : ""}
+                      </div>
+                      <div class="skill-card-meta">
+                        ${statusReason ? `<span class="note">${escapeHtml(statusReason)}</span>` : ""}
+                      </div>
+                      <div class="skill-card-section">
+                        ${renderPathRow({ label: t("common.entry"), fullPath: entry.link_path, highlightedPath: highlightText(entry.link_path, currentQuery) })}
+                        ${entry.link_kind === "symlink" ? renderPathRow({ label: t("common.target"), fullPath: entry.target_path, highlightedPath: highlightText(entry.target_path, currentQuery) }) : ""}
+                      </div>
+                      <div class="skill-card-actions">
+                        ${category === "mounted" || category === "invalid"
+                          ? `<button class="danger" data-action="remove-link" data-link="${escapeHtml(entry.link_path)}">${escapeHtml(t("action.removeMount"))}</button>`
+                          : `
+                            ${!localSkill ? `<button class="secondary" data-action="import-local-skill" data-skill="${escapeHtml(entry.target_path)}" data-root="${escapeHtml(target.detected_path || target.configured_path || entry.target_path)}">${escapeHtml(t("action.addToLocalLibrary"))}</button>` : ""}
+                            ${localSkill ? `<button class="danger" data-action="delete-local-skill" data-skill="${escapeHtml(entry.target_path)}">${escapeHtml(t("action.removeFromLocalLibrary"))}</button>` : ""}
+                            ${(() => {
+                              if (!moveRoots.length) {
+                                return `<button class="secondary" disabled>${escapeHtml(t("action.noMovableRoot"))}</button>`;
+                              }
+                              return `<button class="warn" data-action="move-direct-skill-to-local" data-agent="${escapeHtml(agent.agent_code)}" data-link="${escapeHtml(entry.link_path)}" data-skill="${escapeHtml(entry.target_path)}" data-root="${escapeHtml(target.detected_path || target.configured_path || "")}">${escapeHtml(t("action.move"))}</button>`;
+                            })()}
+                            <button class="danger" data-action="delete-direct-skill" data-agent="${escapeHtml(agent.agent_code)}" data-link="${escapeHtml(entry.link_path)}">${escapeHtml(t("action.deleteFolder"))}</button>
+                          `
+                        }
+                      </div>
+                    </div>
+                  `;
+                }).join("") : (currentQuery ? `<div class="empty">${escapeHtml(t("agentList.currentNotFound", { name: agent.display_name }))}</div>` : `<div class="empty">${escapeHtml(t("agentList.currentEmpty", { name: agent.display_name }))}</div>`)}
+                ${invalidCount ? `<div class="empty">${escapeHtml(t("agentList.invalidTip", { name: agent.display_name, count: invalidCount }))}</div>` : ""}
+              </div>
+            </article>
+          </div>
+        `;
+      }
+
+      function renderSystemStatus() {
+        const container = $("#systemStatus");
+        container.className = "list system-status-grid";
+        const items = [
+          {
+            label: t("common.serviceStatus"),
+            value: state.runtime.connected ? t("common.connected") : t("common.disconnected")
+          },
+          {
+            label: t("common.serviceUrl"),
+            value: state.runtime.server_url || state.apiBase || "-"
+          },
+          {
+            label: t("common.sqlite"),
+            value: state.runtime.dbPath || "-"
+          },
+          {
+            label: t("common.python"),
+            value: state.runtime.pythonVersion || "-"
+          }
+        ];
+
+        container.innerHTML = items.map((item) => `
+          <div class="list-item status-card">
+            <strong>${escapeHtml(item.label)}</strong>
+            <div class="path">${escapeHtml(item.value)}</div>
+          </div>
+        `).join("");
+      }
+
+      function renderLogs() {
+        const container = $("#operationLog");
+        if (!container) {
+          return;
+        }
+        if (!state.operationLogs.length && !state.operationLogLoading) {
+          container.innerHTML = `<div class="empty">${escapeHtml(t("system.logs.empty"))}</div>`;
+          return;
+        }
+
+        container.innerHTML = `
+          ${state.operationLogs.map((entry) => `
+          <div class="log-line">
+            <div class="log-head">
+              <strong>${escapeHtml(entry.message || "-")}</strong>
+              <div class="log-meta">
+                <span class="badge ${escapeHtml(entry.level || "info")}">${escapeHtml(entry.level || "info")}</span>
+                ${entry.source ? `<span class="pill">${escapeHtml(entry.source)}</span>` : ""}
+                ${entry.action ? `<span class="pill">${escapeHtml(entry.action)}</span>` : ""}
+                <span class="note">${escapeHtml(entry.time || entry.created_at || "-")}</span>
+              </div>
+            </div>
+            <div class="log-detail">${escapeHtml(entry.detail_summary || entry.detail || entry.message || "")}</div>
+          </div>
+          `).join("")}
+          ${state.operationLogLoading ? `<div class="log-more">${escapeHtml(t("system.logs.loadingMore"))}</div>` : ""}
+          ${!state.operationLogLoading && state.operationLogHasNext ? `<div class="log-more">${escapeHtml(t("system.logs.scrollMore"))}</div>` : ""}
+          ${!state.operationLogLoading && !state.operationLogHasNext && state.operationLogs.length ? `<div class="log-end">${escapeHtml(t("system.logs.end"))}</div>` : ""}
+        `;
+      }
+
+      function handleOperationLogScroll(event) {
+        const container = event.currentTarget;
+        if (!container || state.operationLogLoading || !state.operationLogHasNext) {
+          return;
+        }
+        const threshold = 120;
+        if (container.scrollTop + container.clientHeight < container.scrollHeight - threshold) {
+          return;
+        }
+        void fetchOperationLogs({ page: state.operationLogPage + 1, append: true });
+      }
+
+      function renderTabs() {
+        document.querySelectorAll(".tab-button").forEach((button) => {
+          button.classList.toggle("active", button.dataset.tab === state.activeTab);
+        });
+
+        document.querySelectorAll(".tab-panel").forEach((panel) => {
+          panel.classList.toggle("active", panel.id === `tab-${state.activeTab}`);
+        });
+      }
+
+      function renderAll() {
+        state.cardDetails = {};
+        state.cardDetailSeq = 0;
+        renderRuntime();
+        renderTabsBar();
+        renderOverview();
+        renderScanRoots();
+        renderLocalSkills();
+        renderAgentPanels();
+        renderAgentManage();
+        renderLocalSimilarResults();
+        Object.keys(state.similarResults).forEach((agentCode) => renderSimilarResults(agentCode));
+        renderSystemStatus();
+        renderLogs();
+        renderTabs();
+        applyStaticI18n();
+        toggleLanguageButtonState();
+      }
+
+      async function withRefresh(work, successMessage) {
+        try {
+          const payload = await work();
+          if (payload?.state) {
+            applyServerState(payload.state);
+          } else {
+            await fetchState();
+          }
+        } catch (error) {
+          state.runtime.connected = false;
+          state.runtime.error = error.message;
+        }
+        renderAll();
+      }
+
+      async function handleClick(event) {
+        if (state.agentSwitcherOpen && !event.target.closest("#agentInlineSwitcher")) {
+          state.agentSwitcherOpen = false;
+          renderAgentPanels();
+        }
+
+        const target = event.target.closest("[data-action], [data-tab]");
+        if (!target) {
+          const card = event.target.closest(".skill-card[data-card-id]");
+          if (card && !event.target.closest("button, a, input, select, textarea, label")) {
+            if (card.dataset.scanRootPath) {
+              openScanRootEditDialog(card.dataset.scanRootPath);
+              return;
+            }
+            openSkillDetailDialog(card.dataset.cardId);
+          }
+          return;
+        }
+
+        if (target.dataset.tab) {
+          state.activeTab = target.dataset.tab;
+          state.agentSwitcherOpen = false;
+          renderTabs();
+          renderAgentPanels();
+          return;
+        }
+
+        const action = target.dataset.action;
+        if (action === "toggle-theme") {
+          applyTheme(state.theme === "light" ? "dark" : "light");
+          renderSystemStatus();
+          return;
+        }
+
+        if (action === "set-language") {
+          applyLanguage(target.dataset.lang || "zh");
+          const editingCode = $("#agentManageEditingCode")?.value || "";
+          if (editingCode) {
+            populateAgentManageForm(editingCode);
+          } else {
+            resetAgentManageForm();
+          }
+          renderAll();
+          return;
+        }
+
+        if (action === "copy-path") {
+          const path = target.dataset.path || "";
+          if (!path) {
+            return;
+          }
+          try {
+            if (navigator.clipboard?.writeText) {
+              await navigator.clipboard.writeText(path);
+            } else {
+              const input = document.createElement("textarea");
+              input.value = path;
+              input.style.position = "fixed";
+              input.style.opacity = "0";
+              document.body.appendChild(input);
+              input.focus();
+              input.select();
+              document.execCommand("copy");
+              document.body.removeChild(input);
+            }
+          } catch (error) {}
+          return;
+        }
+
+        if (action === "toggle-agent-menu") {
+          state.agentSwitcherOpen = !state.agentSwitcherOpen;
+          renderAgentPanels();
+          return;
+        }
+
+        if (action === "select-agent") {
+          state.currentAgentCode = target.dataset.agent || "";
+          state.activeTab = "agent-list";
+          state.agentSwitcherOpen = false;
+          renderAll();
+          return;
+        }
+
+        if (action === "agent-manage-new") {
+          resetAgentManageForm();
+          return;
+        }
+
+        if (action === "edit-agent") {
+          populateAgentManageForm(target.dataset.agent || "");
+          state.activeTab = "agent-manage";
+          state.agentSwitcherOpen = false;
+          renderTabs();
+          renderAgentPanels();
+          return;
+        }
+
+        if (action === "auto-discover-agents") {
+          await withRefresh(() => apiRequest("/api/agents/auto-discover", {
+            method: "POST"
+          }), "已自动检索内置 Agent");
+          return;
+        }
+
+        if (action === "toggle-agent-visibility") {
+          await withRefresh(() => apiRequest("/api/agents/visibility", {
+            method: "POST",
+            body: {
+              agent_code: target.dataset.agent,
+              is_visible: Number(target.dataset.visible) === 1
+            }
+          }), "Agent 显示状态已更新");
+          return;
+        }
+
+        if (action === "rescan-all-roots") {
+          await withRefresh(() => apiRequest("/api/scan-roots/rescan", { method: "POST" }), "已重扫全部扫描源");
+          return;
+        }
+
+        if (action === "delete-local-skill") {
+          await withRefresh(() => apiRequest(`/api/local-skills?path=${encodeURIComponent(target.dataset.skill)}`, {
+            method: "DELETE"
+          }), `已删除SKILL仓库记录：${target.dataset.skill}`);
+          return;
+        }
+
+        if (action === "delete-agent") {
+          const agentCode = target.dataset.agent || "";
+          if (!agentCode) {
+            return;
+          }
+          if (!window.confirm(t("confirm.deleteAgent", { agentCode }))) {
+            return;
+          }
+          await withRefresh(() => apiRequest(`/api/agents?agent_code=${encodeURIComponent(agentCode)}`, {
+            method: "DELETE"
+          }), `已删除 Agent：${agentCode}`);
+          resetAgentManageForm();
+          return;
+        }
+
+        if (action === "move-local-skill") {
+          openMoveSkillDialog({
+            mode: "local",
+            skillPath: target.dataset.skill,
+            currentRootPath: target.dataset.root
+          });
+          return;
+        }
+
+        if (action === "import-local-skill") {
+          await withRefresh(() => apiRequest("/api/local-skills", {
+            method: "POST",
+            body: { skill_path: target.dataset.skill, root_path: target.dataset.root }
+          }), `已加入SKILL仓库：${target.dataset.skill}`);
+          return;
+        }
+
+        if (action === "scan-root") {
+          await withRefresh(() => apiRequest("/api/scan-roots/item/rescan", {
+            method: "POST",
+            body: { path: target.dataset.path, mode: target.dataset.mode }
+          }), `已重扫 ${target.dataset.path}`);
+          return;
+        }
+
+        if (action === "remove-root") {
+          await withRefresh(() => apiRequest(`/api/scan-roots?path=${encodeURIComponent(target.dataset.path)}`, {
+            method: "DELETE"
+          }), `已移除扫描源：${target.dataset.path}`);
+          return;
+        }
+
+        if (action === "save-agent-path") {
+          await withRefresh(() => {
+            const agentCode = target.dataset.agent;
+            const value = document.querySelector(`#agent-path-${agentCode}`).value;
+            return apiRequest(`/api/agents/${encodeURIComponent(agentCode)}/path`, {
+              method: "POST",
+              body: { path: value }
+            });
+          }, `已保存 ${target.dataset.agent} 目标目录`);
+          return;
+        }
+
+        if (action === "scan-agent") {
+          await withRefresh(() => apiRequest(`/api/agents/${encodeURIComponent(target.dataset.agent)}/scan`, {
+            method: "POST"
+          }), `已刷新 ${target.dataset.agent} 目录`);
+          return;
+        }
+
+        if (action === "scan-agent-default-to-local") {
+          await withRefresh(() => apiRequest(`/api/agents/${encodeURIComponent(target.dataset.agent)}/scan-default-to-local`, {
+            method: "POST"
+          }), `已扫描 ${target.dataset.agent} 当前配置目录到SKILL仓库`);
+          return;
+        }
+
+        if (action === "move-direct-skill-to-local") {
+          openMoveSkillDialog({
+            mode: "agent-direct",
+            skillPath: target.dataset.skill,
+            currentRootPath: target.dataset.root,
+            agentCode: target.dataset.agent,
+            linkPath: target.dataset.link
+          });
+          return;
+        }
+
+        if (action === "delete-direct-skill") {
+          await withRefresh(() => apiRequest(`/api/agents/${encodeURIComponent(target.dataset.agent)}/delete-direct-skill`, {
+            method: "POST",
+            body: { link_path: target.dataset.link }
+          }), `已删除正常 Skill：${target.dataset.link}`);
+          return;
+        }
+
+        if (action === "cleanup-invalid") {
+          await withRefresh(() => apiRequest(`/api/agents/${encodeURIComponent(target.dataset.agent)}/cleanup-invalid`, {
+            method: "POST"
+          }), `已清理 ${target.dataset.agent} 失效链接`);
+          return;
+        }
+
+        if (action === "link-skill") {
+          await withRefresh(() => apiRequest(`/api/agents/${encodeURIComponent(target.dataset.agent)}/link`, {
+            method: "POST",
+            body: { skill_path: target.dataset.skill }
+          }), `已挂载到 ${target.dataset.agent}`);
+          return;
+        }
+
+        if (action === "remove-link") {
+          await withRefresh(() => apiRequest(`/api/links?path=${encodeURIComponent(target.dataset.link)}`, {
+            method: "DELETE"
+          }), `已移除软链接：${target.dataset.link}`);
+        }
+
+        if (action === "find-local-similar") {
+          const slider = document.getElementById("local-similarity-slider");
+          const statusEl = document.getElementById("local-similar-status");
+          const resultsEl = document.getElementById("local-similar-results");
+          const btn = document.getElementById("find-local-similar-btn");
+          if (!slider || !statusEl || !resultsEl || !btn) return;
+
+          const minSimilarity = parseFloat(slider.value);
+          state.localSimilarityThreshold = minSimilarity;
+          btn.disabled = true;
+          btn.textContent = t("similarity.scanning");
+          statusEl.textContent = t("similarity.scanning");
+          statusEl.style.color = "";
+
+          try {
+            const payload = await apiRequest("/api/local-skills/find-similar", {
+              method: "POST",
+              body: { min_similarity: minSimilarity }
+            });
+            state.localSimilarResults = payload.similar || [];
+            renderLocalSimilarResults();
+            const count = state.localSimilarResults.length;
+            statusEl.textContent = t("similarity.scanDone", { count });
+          } catch (error) {
+            statusEl.textContent = t("similarity.scanFailed", { message: error.message });
+            statusEl.style.color = "var(--danger-text)";
+            resultsEl.style.display = "none";
+          } finally {
+            btn.disabled = false;
+            btn.textContent = t("action.scanSimilar");
+          }
+          return;
+        }
+
+        if (action === "find-similar") {
+          const agentCode = target.dataset.agent;
+          const slider = document.querySelector(`#similarity-slider-${CSS.escape(agentCode)}`);
+          const statusEl = document.getElementById(`similar-status-${agentCode}`);
+          const resultsEl = document.getElementById(`similar-results-${agentCode}`);
+          const btn = document.getElementById(`find-similar-btn-${agentCode}`);
+          if (!slider || !statusEl || !resultsEl || !btn) return;
+
+          const minSimilarity = parseFloat(slider.value);
+          state.similarityThresholds[agentCode] = minSimilarity;
+          btn.disabled = true;
+          btn.textContent = t("similarity.scanning");
+          statusEl.textContent = t("similarity.scanning");
+          statusEl.style.color = "";
+
+          try {
+            const payload = await apiRequest(`/api/agents/${encodeURIComponent(agentCode)}/find-similar`, {
+              method: "POST",
+              body: {
+                min_similarity: minSimilarity,
+              }
+            });
+            state.similarResults[agentCode] = payload.similar || [];
+            renderSimilarResults(agentCode);
+            const count = state.similarResults[agentCode].length;
+            statusEl.textContent = t("similarity.scanDone", { count });
+          } catch (error) {
+            statusEl.textContent = t("similarity.scanFailed", { message: error.message });
+            statusEl.style.color = "var(--danger-text)";
+            resultsEl.style.display = "none";
+          } finally {
+            btn.disabled = false;
+            btn.textContent = t("action.scanSimilar");
+          }
+          return;
+        }
+      }
+
+      async function handleSubmit(event) {
+        if (event.target.id === "scanRootForm") {
+          event.preventDefault();
+          await withRefresh(() => {
+            const mode = $("#rootMode").value;
+            const inputPath = $("#rootPath").value;
+            const note = $("#rootNote").value;
+            return apiRequest("/api/scan-roots", {
+              method: "POST",
+              body: { path: inputPath, mode, note }
+            });
+          }, "扫描源已保存并完成扫描");
+          $("#rootPath").value = "";
+          $("#rootNote").value = "";
+          return;
+        }
+
+        if (event.target.id === "scanRootEditForm") {
+          event.preventDefault();
+          const dialog = $("#scanRootEditDialog");
+          try {
+            const payload = await apiRequest("/api/scan-roots/update", {
+              method: "POST",
+              body: {
+                old_path: $("#scanRootEditOldPath").value,
+                path: $("#scanRootEditPath").value,
+                mode: $("#scanRootEditMode").value,
+                note: $("#scanRootEditNote").value
+              }
+            });
+            if (payload?.state) {
+              applyServerState(payload.state);
+            } else {
+              await fetchState();
+            }
+            if (dialog?.open) {
+              dialog.close();
+            }
+          } catch (error) {
+            state.runtime.connected = false;
+            state.runtime.error = error.message;
+          }
+          renderAll();
+          return;
+        }
+
+        if (event.target.id === "agentManageForm") {
+          event.preventDefault();
+          const editingCode = $("#agentManageEditingCode")?.value || "";
+          const agentCode = ($("#agentManageCode")?.value || "").trim();
+          const body = {
+            agent_code: editingCode || agentCode,
+            display_name: ($("#agentManageName")?.value || "").trim(),
+            default_path: ($("#agentManageDefaultPath")?.value || "").trim(),
+            configured_path: ($("#agentManageConfiguredPath")?.value || "").trim()
+          };
+
+          if (editingCode) {
+            await withRefresh(() => apiRequest("/api/agents/update", {
+              method: "POST",
+              body: {
+                ...body,
+                is_visible: findAgent(editingCode)?.is_visible
+              }
+            }), `已更新 Agent：${editingCode}`);
+            populateAgentManageForm(editingCode);
+            return;
+          }
+
+          await withRefresh(() => apiRequest("/api/agents", {
+            method: "POST",
+            body
+          }), `已创建 Agent：${agentCode}`);
+          resetAgentManageForm();
+          return;
+        }
+      }
+
+      function updateAgentLibrarySearch(agentCode, value, selectionStart, selectionEnd) {
+        state.agentLibrarySearch[agentCode] = value;
+        renderAgentPanels();
+        const nextInput = document.querySelector(`#agent-library-search-${CSS.escape(agentCode)}`);
+        if (nextInput) {
+          nextInput.focus();
+          try {
+            nextInput.setSelectionRange(selectionStart, selectionEnd);
+          } catch (error) {
+            // Ignore browsers/input modes that do not support selection APIs.
+          }
+        }
+      }
+
+      function updateAgentCurrentSearch(agentCode, value, selectionStart, selectionEnd) {
+        state.agentCurrentSearch[agentCode] = value;
+        renderAgentPanels();
+        const nextInput = document.querySelector(`#agent-current-search-${CSS.escape(agentCode)}`);
+        if (nextInput) {
+          nextInput.focus();
+          try {
+            nextInput.setSelectionRange(selectionStart, selectionEnd);
+          } catch (error) {
+            // Ignore browsers/input modes that do not support selection APIs.
+          }
+        }
+      }
+
+      function handleInput(event) {
+        if (event.target.id === "skillSearch") {
+          state.search = event.target.value;
+          renderLocalSkills();
+          return;
+        }
+
+        if (event.target.dataset.localSimilaritySlider) {
+          const value = parseFloat(event.target.value);
+          state.localSimilarityThreshold = value;
+          const valueEl = document.getElementById("local-similarity-value");
+          if (valueEl) {
+            valueEl.textContent = value.toFixed(2);
+          }
+          return;
+        }
+
+        if (event.target.dataset.agentLibrarySearch) {
+          const agentCode = event.target.dataset.agentLibrarySearch;
+          const value = event.target.value;
+          const isComposing = Boolean(event.isComposing || state.composingAgentLibrarySearch[agentCode]);
+          state.composingAgentLibrarySearch[agentCode] = Boolean(event.isComposing);
+          state.agentLibrarySearch[agentCode] = value;
+          if (isComposing) {
+            return;
+          }
+          const selectionStart = event.target.selectionStart ?? value.length;
+          const selectionEnd = event.target.selectionEnd ?? value.length;
+          updateAgentLibrarySearch(agentCode, value, selectionStart, selectionEnd);
+          return;
+        }
+
+        if (event.target.dataset.agentCurrentSearch) {
+          const agentCode = event.target.dataset.agentCurrentSearch;
+          const value = event.target.value;
+          const isComposing = Boolean(event.isComposing || state.composingAgentCurrentSearch[agentCode]);
+          state.composingAgentCurrentSearch[agentCode] = Boolean(event.isComposing);
+          state.agentCurrentSearch[agentCode] = value;
+          if (isComposing) {
+            return;
+          }
+          const selectionStart = event.target.selectionStart ?? value.length;
+          const selectionEnd = event.target.selectionEnd ?? value.length;
+          updateAgentCurrentSearch(agentCode, value, selectionStart, selectionEnd);
+          return;
+        }
+
+        if (event.target.dataset.similaritySlider) {
+          const agentCode = event.target.dataset.similaritySlider;
+          const value = parseFloat(event.target.value);
+          state.similarityThresholds[agentCode] = value;
+          const valueEl = document.getElementById(`similarity-value-${agentCode}`);
+          if (valueEl) {
+            valueEl.textContent = value.toFixed(2);
+          }
+        }
+      }
+
+      function handleComposition(event) {
+        if (event.type !== "compositionstart" && event.type !== "compositionend") {
+          return;
+        }
+        const target = event.target;
+        if (!(target instanceof HTMLInputElement)) {
+          return;
+        }
+
+        if (target.dataset.agentLibrarySearch) {
+          const agentCode = target.dataset.agentLibrarySearch;
+          const composing = event.type === "compositionstart";
+          state.composingAgentLibrarySearch[agentCode] = composing;
+          if (!composing) {
+            const value = target.value;
+            const selectionStart = target.selectionStart ?? value.length;
+            const selectionEnd = target.selectionEnd ?? value.length;
+            updateAgentLibrarySearch(agentCode, value, selectionStart, selectionEnd);
+          }
+          return;
+        }
+
+        if (target.dataset.agentCurrentSearch) {
+          const agentCode = target.dataset.agentCurrentSearch;
+          const composing = event.type === "compositionstart";
+          state.composingAgentCurrentSearch[agentCode] = composing;
+          if (!composing) {
+            const value = target.value;
+            const selectionStart = target.selectionStart ?? value.length;
+            const selectionEnd = target.selectionEnd ?? value.length;
+            updateAgentCurrentSearch(agentCode, value, selectionStart, selectionEnd);
+          }
+        }
+      }
+
+      function renderSimilarityPathBlock(prefix, item) {
+        const entryPath = item?.entry_path || item?.path || "";
+        const targetPath = item?.path || "";
+        if (entryPath && entryPath !== targetPath) {
+          return `
+            ${renderPathRow({ label: `${prefix} ${t("common.entry")}`, fullPath: entryPath })}
+            ${renderPathRow({ label: `${prefix} ${t("common.target")}`, fullPath: targetPath })}
+          `;
+        }
+        return renderPathRow({ label: `${prefix} ${t("common.path")}`, fullPath: targetPath });
+      }
+
+      function renderSimilarityPairs(container, results, threshold, leftLabel, rightLabel) {
+        if (!container) return;
+
+        if (!results.length) {
+          container.style.display = "none";
+          container.innerHTML = "";
+          return;
+        }
+
+        container.style.display = "block";
+        container.innerHTML = `<div class="list skill-grid">${results.map((pair) => {
+          const left = pair.left_skill || {};
+          const right = pair.right_skill || {};
+          const reason = pair.reason || {};
+          const pct = (pair.similarity * 100).toFixed(0);
+          const badgeClass = pair.similarity >= 0.9 ? "danger" : pair.similarity >= 0.8 ? "warn" : "info";
+          const sharedPhrases = Array.isArray(reason.shared_phrases) ? reason.shared_phrases : [];
+          const sharedKeywords = Array.isArray(reason.shared_keywords) ? reason.shared_keywords : [];
+          const reasonParts = [];
+          if (sharedPhrases.length) {
+            reasonParts.push(t("similarity.sharedPhrases", { items: sharedPhrases.map((item) => `“${item}”`).join("、") }));
+          }
+          if (sharedKeywords.length) {
+            reasonParts.push(t("similarity.sharedKeywords", { items: sharedKeywords.map((item) => `“${item}”`).join("、") }));
+          }
+          if (!reasonParts.length && (typeof reason.word_overlap === "number" || typeof reason.phrase_overlap === "number")) {
+            reasonParts.push(t("similarity.overlap", {
+              word: (Number(reason.word_overlap || 0) * 100).toFixed(0),
+              phrase: (Number(reason.phrase_overlap || 0) * 100).toFixed(0)
+            }));
+          }
+          const detailId = registerCardDetail({
+            title: `${left.name || "-"} ↔ ${right.name || "-"}`,
+            type: "similarity_match",
+            similarity: pair.similarity,
+            left_label: leftLabel,
+            right_label: rightLabel,
+            left_skill: left,
+            right_skill: right,
+            reason: reason,
+            reason_text: reasonParts.join("；"),
+            row: pair
+          });
+          return `
+            <div class="list-item skill-card" data-card-id="${detailId}">
+              <div class="skill-card-head">
+                <div class="skill-card-title">
+                  <div class="skill-card-kicker">${escapeHtml(t("similarity.matchKicker"))}</div>
+                  <div class="skill-card-mainline">
+                    <strong>${escapeHtml(left.name || "-")}</strong>
+                    <span class="muted">↔</span>
+                    <strong>${escapeHtml(right.name || "-")}</strong>
+                  </div>
+                </div>
+                <div class="skill-card-score">${pct}%</div>
+              </div>
+              <div class="skill-card-meta">
+                <span class="badge ${badgeClass}">${escapeHtml(t("similarity.percent", { pct }))}</span>
+                <span class="pill">${escapeHtml(left.kind_label || leftLabel)}</span>
+                <span class="pill">${escapeHtml(right.kind_label || rightLabel)}</span>
+              </div>
+              <div class="skill-card-pair">
+                <div class="skill-card-pair-top">
+                  <div class="skill-card-pair-name">
+                    <div class="skill-card-label">${escapeHtml(leftLabel)}</div>
+                  </div>
+                </div>
+                ${renderSimilarityPathBlock(leftLabel, left)}
+              </div>
+              <div class="skill-card-pair">
+                <div class="skill-card-pair-top">
+                  <div class="skill-card-pair-name">
+                    <div class="skill-card-label">${escapeHtml(rightLabel)}</div>
+                  </div>
+                </div>
+                ${renderSimilarityPathBlock(rightLabel, right)}
+              </div>
+              ${reasonParts.length ? `<div class="skill-card-section"><div class="skill-card-label">${escapeHtml(t("similarity.reason"))}</div><div class="description">${escapeHtml(reasonParts.join("；"))}</div></div>` : ""}
+            </div>
+          `;
+        }).join("")}</div>`;
+      }
+
+      function renderSimilarResults(agentCode) {
+        renderSimilarityPairs(
+          document.getElementById(`similar-results-${agentCode}`),
+          state.similarResults[agentCode] || [],
+          state.similarityThresholds[agentCode] ?? 0.5,
+          t("similarity.skillA"),
+          t("similarity.skillB")
+        );
+      }
+
+      function renderLocalSimilarResults() {
+        renderSimilarityPairs(
+          document.getElementById("local-similar-results"),
+          state.localSimilarResults || [],
+          state.localSimilarityThreshold ?? 0.5,
+          t("similarity.skillA"),
+          t("similarity.skillB")
+        );
+      }
+
+      async function init() {
+        applyTheme(state.theme);
+        applyLanguage(state.language);
+        document.addEventListener("click", (event) => {
+          void handleClick(event);
+        });
+        document.addEventListener("submit", (event) => {
+          void handleSubmit(event);
+        });
+        document.addEventListener("input", handleInput);
+        document.addEventListener("compositionstart", handleComposition);
+        document.addEventListener("compositionend", handleComposition);
+        $("#moveSkillDialogConfirm")?.addEventListener("click", (event) => {
+          event.preventDefault();
+          void confirmMoveSkill();
+        });
+        $("#operationLog")?.addEventListener("scroll", handleOperationLogScroll);
+        resetAgentManageForm();
+        renderAll();
+        try {
+          await fetchState();
+        } catch (error) {
+          state.runtime.connected = false;
+          state.runtime.error = error.message;
+        }
+        renderAll();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
