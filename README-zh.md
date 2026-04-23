@@ -1,6 +1,8 @@
-# 🗃️ Agent Skill Manager
+# 🗃️ Skill Manager
 
 [English](./README.md) | 中文
+
+![Agent Skill Manager](./resource/skill-manage.jpg)
 
 **面向 Codex、ClaudeCode、Hermes、OpenClaw 的开源、本地优先 Agent Skill 管理工具。**
 
