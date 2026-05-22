@@ -10,7 +10,7 @@ Agent Skill Manager is a local web console for organizing shared skill folders a
 
 It is designed for developers who search for an open-source local agent skill manager, a SKILL repository manager, a multi-agent skill library UI, or a lightweight tool for symlink cleanup and invalid skill link cleanup across Codex, ClaudeCode, Hermes, and OpenClaw.
 
-The project stays intentionally small, but it now uses an engineered layout: the Python backend lives in `src/skill_manage/`, the UI lives in `web/`, launch helpers live in `scripts/`, and runtime artifacts are written to `data/` and `logs/`.
+The project stays intentionally small, but it now uses an engineered layout: the Python backend lives in `src/skill_manage/`, the UI lives in `web/`, launch helpers live in `scripts/`, and source-development runtime artifacts are written to `data/` and `logs/`. When installed as the npm CLI, runtime data moves to the configured user runtime home instead of the package install directory.
 
 The default deployment model is local-only: the built-in server is intended to run on loopback addresses such as `127.0.0.1`, `localhost`, or `::1`.
 
@@ -94,12 +94,14 @@ Auto-discovery scans exactly one built-in default path per agent. After registra
 | --- | --- |
 | `src/skill-manage-server.py` | Thin compatibility entry that boots the packaged backend |
 | `src/skill_manage/` | Python backend package for startup, HTTP handlers, services, repositories, database, and utilities |
+| `bin/skill-manager.js` | npm CLI for start/stop/restart/status/web/help/version |
 | `web/skill-manage.html` | Single-file UI for the full local management console |
 | `scripts/start.sh` | Startup helper that checks Python, installs dependencies, frees the configured port, and launches the service |
-| `data/skill-manage.sqlite3` | Runtime SQLite database |
-| `logs/skill-manage.log` | Runtime log file |
+| `data/skill-manage.sqlite3` | Source-development SQLite database |
+| `logs/skill-manage.log` | Source-development log file |
 | `requirements.txt` | Python dependency list used by the startup script |
 | `docs/dependencies.md` | Dependency inventory and runtime notes |
+| `docs/npm-install-publish-use-zh.md` | Source install, npm packaging, publishing, local/global install, and CLI usage tutorial |
 
 ## Quick Start
 
@@ -117,9 +119,80 @@ Notes:
 - The backend is standard-library-first, but the project still keeps `requirements.txt` as the install entry for startup automation.
 - The default host is `127.0.0.1`.
 
+### Install With npm
+
+The npm package name is scoped, but the global command is `skill-manager`:
+
+```bash
+npm install -g @im-fan/skill-manage
+```
+
+Use the CLI to manage the local Python service:
+
+```bash
+skill-manager start
+skill-manager status
+skill-manager web
+skill-manager restart
+skill-manager stop
+skill-manager h
+skill-manager version
+```
+
+The first `start`, `status`, or `web` command creates the default config file:
+
+```text
+~/.skill-manager/config.json
+```
+
+Default config:
+
+```json
+{
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8765
+  },
+  "runtimeHome": "~/.skill-manager"
+}
+```
+
+The CLI stores runtime files under `runtimeHome`:
+
+```text
+~/.skill-manager/
+  config.json
+  data/skill-manage.sqlite3
+  logs/skill-manage.log
+  run/skill-manager.pid
+  run/skill-manager.json
+```
+
+To change the port, edit `server.port` in the config file and run `skill-manager restart`. If the configured port is already owned by another process, `skill-manager start` fails without killing it and prints the config file path plus the `server.port` key to change.
+
+Environment variables:
+
+| Variable | Purpose |
+| --- | --- |
+| `SKILL_MANAGER_CONFIG` | Use a custom config file path |
+| `SKILL_MANAGER_HOME` | Override the default CLI home, including the default config path |
+| `SKILL_MANAGE_HOME` | Override the Python runtime home for database and logs |
+| `SKILL_MANAGER_PYTHON` | Select the Python executable used by the CLI |
+
+`SKILL_MANAGER_HOME` is preferred for CLI configuration. The CLI passes the resolved `runtimeHome` to Python as `SKILL_MANAGE_HOME`, so SQLite and logs are not written into the npm package directory.
+
+For the full source install, npm pack, publishing, local/global npm install, and `skill-manager` usage flow, see [Skill Manager 源码安装、npm 打包发布与使用教程](./docs/npm-install-publish-use-zh.md).
+
 ### Start The Service
 
-Run the compatibility entry:
+For npm/global installs, start the service with:
+
+```bash
+skill-manager start
+skill-manager web
+```
+
+For source development, run the compatibility entry:
 
 ```bash
 python3 src/skill-manage-server.py --open
@@ -197,8 +270,8 @@ The UI talks to a small local JSON API. Current endpoints include:
 
 ## Runtime And Safety Notes
 
-- State is stored in `data/skill-manage.sqlite3`.
-- Runtime logs are written to `logs/skill-manage.log`.
+- State is stored in `data/skill-manage.sqlite3` during source development, or in `<runtimeHome>/data/skill-manage.sqlite3` when launched by the npm CLI.
+- Runtime logs are written to `logs/skill-manage.log` during source development, or in `<runtimeHome>/logs/skill-manage.log` when launched by the npm CLI.
 - The app uses SQLite `DELETE` journal mode, so `sqlite3-wal` and `sqlite3-shm` should not be kept around during normal operation.
 - Operation logs are intended for meaningful write/update actions, not noisy initialization messages.
 - Invalid-link cleanup removes symlink entries only; it does not delete real skill directories.

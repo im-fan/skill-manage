@@ -10,7 +10,7 @@ Agent Skill Manager 是一个本地 Web 控制台，用来统一整理多个 AI 
 
 如果你在搜索开源的 Agent Skill 管理工具、SKILL仓库管理工具、多 Agent Skill 库管理界面，或者希望找到一个能处理软链接挂载、失效链接清理、`SKILL.md` 目录扫描的本地工具，这个项目就是为这类场景设计的。
 
-项目依然刻意保持轻量，但已经采用工程化目录：Python 后端位于 `src/skill_manage/`，前端页面位于 `web/`，启动辅助脚本位于 `scripts/`，运行时产物写入 `data/` 和 `logs/`。
+项目依然刻意保持轻量，但已经采用工程化目录：Python 后端位于 `src/skill_manage/`，前端页面位于 `web/`，启动辅助脚本位于 `scripts/`，源码开发时的运行产物写入 `data/` 和 `logs/`。通过 npm CLI 安装后，运行数据会写入配置的用户运行目录，而不是 npm 包安装目录。
 
 默认部署模型是仅本机使用：内置服务只面向 `127.0.0.1`、`localhost`、`::1` 这类回环地址。
 
@@ -94,12 +94,14 @@ Agent Skill Manager 是一个本地 Web 控制台，用来统一整理多个 AI 
 | --- | --- |
 | `src/skill-manage-server.py` | 兼容入口，用来启动 package 化后的后端 |
 | `src/skill_manage/` | Python 后端 package，包含启动、HTTP 处理、services、repositories、数据库和工具模块 |
+| `bin/skill-manager.js` | npm CLI，提供 start/stop/restart/status/web/help/version |
 | `web/skill-manage.html` | 完整本地管理控制台的单文件前端 |
 | `scripts/start.sh` | 启动辅助脚本，负责检查 Python、安装依赖、释放目标端口并拉起服务 |
-| `data/skill-manage.sqlite3` | 运行时 SQLite 数据库 |
-| `logs/skill-manage.log` | 运行日志文件 |
+| `data/skill-manage.sqlite3` | 源码开发时的 SQLite 数据库 |
+| `logs/skill-manage.log` | 源码开发时的日志文件 |
 | `requirements.txt` | 启动脚本使用的 Python 依赖清单 |
 | `docs/dependencies.md` | 依赖清单和运行说明 |
+| `docs/npm-install-publish-use-zh.md` | 源码安装、npm 打包发布、本地/全局安装和 CLI 使用教程 |
 
 ## 快速开始
 
@@ -117,9 +119,80 @@ Agent Skill Manager 是一个本地 Web 控制台，用来统一整理多个 AI 
 - 后端尽量只使用标准库，但项目仍保留 `requirements.txt` 作为自动安装入口。
 - 默认 host 为 `127.0.0.1`。
 
+### 通过 npm 安装
+
+npm 包名使用 scoped name，但全局命令仍是 `skill-manager`：
+
+```bash
+npm install -g @im-fan/skill-manage
+```
+
+用 CLI 管理本地 Python 服务：
+
+```bash
+skill-manager start
+skill-manager status
+skill-manager web
+skill-manager restart
+skill-manager stop
+skill-manager h
+skill-manager version
+```
+
+首次执行 `start`、`status` 或 `web` 时会创建默认配置文件：
+
+```text
+~/.skill-manager/config.json
+```
+
+默认配置：
+
+```json
+{
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8765
+  },
+  "runtimeHome": "~/.skill-manager"
+}
+```
+
+CLI 会把运行文件写入 `runtimeHome`：
+
+```text
+~/.skill-manager/
+  config.json
+  data/skill-manage.sqlite3
+  logs/skill-manage.log
+  run/skill-manager.pid
+  run/skill-manager.json
+```
+
+如需修改端口，编辑配置文件中的 `server.port` 后运行 `skill-manager restart`。如果配置端口已被其他进程占用，`skill-manager start` 会失败且不会杀掉该进程，并在错误信息里提示实际配置文件路径和需要修改的 `server.port`。
+
+环境变量：
+
+| 变量 | 作用 |
+| --- | --- |
+| `SKILL_MANAGER_CONFIG` | 指定自定义配置文件路径 |
+| `SKILL_MANAGER_HOME` | 覆盖默认 CLI home，包括默认配置文件路径 |
+| `SKILL_MANAGE_HOME` | 覆盖 Python 运行目录，用于数据库和日志 |
+| `SKILL_MANAGER_PYTHON` | 指定 CLI 使用的 Python 可执行文件 |
+
+CLI 配置优先使用 `SKILL_MANAGER_HOME`。CLI 会把解析后的 `runtimeHome` 作为 `SKILL_MANAGE_HOME` 传给 Python，因此 SQLite 和日志不会写入 npm 包安装目录。
+
+完整的源码安装、npm pack、发布打包、本地/全局 npm 安装和 `skill-manager` 使用流程，见 [Skill Manager 源码安装、npm 打包发布与使用教程](./docs/npm-install-publish-use-zh.md)。
+
 ### 启动服务
 
-运行兼容入口：
+通过 npm/global 安装后，使用：
+
+```bash
+skill-manager start
+skill-manager web
+```
+
+源码开发时，运行兼容入口：
 
 ```bash
 python3 src/skill-manage-server.py --open
@@ -197,8 +270,8 @@ http://127.0.0.1:8765/
 
 ## 运行时与安全说明
 
-- 状态数据保存在 `data/skill-manage.sqlite3`。
-- 运行日志写入 `logs/skill-manage.log`。
+- 源码开发时，状态数据保存在 `data/skill-manage.sqlite3`；通过 npm CLI 启动时，状态数据保存在 `<runtimeHome>/data/skill-manage.sqlite3`。
+- 源码开发时，运行日志写入 `logs/skill-manage.log`；通过 npm CLI 启动时，运行日志写入 `<runtimeHome>/logs/skill-manage.log`。
 - 应用使用 SQLite `DELETE` journal mode，因此正常运行时不应持续保留 `sqlite3-wal` 和 `sqlite3-shm` 文件。
 - 操作日志只关注有意义的写入/更新行为，不记录初始化完成之类的噪音。
 - 清理失效链接只会删除软链接条目，不会删除真实 Skill 目录。

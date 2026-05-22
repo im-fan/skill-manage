@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from .config import DB_FILENAME, HTML_FILENAME, LOG_FILENAME, SERVER_SCRIPT_NAME
@@ -9,8 +10,11 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SRC_ROOT = PROJECT_ROOT / "src"
 WEB_DIR = PROJECT_ROOT / "web"
 SCRIPTS_DIR = PROJECT_ROOT / "scripts"
-DATA_DIR = PROJECT_ROOT / "data"
-LOGS_DIR = PROJECT_ROOT / "logs"
+
+_runtime_home = os.environ.get("SKILL_MANAGE_HOME", "").strip()
+RUNTIME_HOME = Path(_runtime_home).expanduser().resolve() if _runtime_home else PROJECT_ROOT
+DATA_DIR = RUNTIME_HOME / "data"
+LOGS_DIR = RUNTIME_HOME / "logs"
 
 HTML_PATH = WEB_DIR / HTML_FILENAME
 DB_PATH = DATA_DIR / DB_FILENAME
