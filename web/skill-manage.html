@@ -98,6 +98,10 @@
       padding: 28px;
     }
 
+    body.modal-open {
+      overflow: hidden;
+    }
+
     .shell {
       max-width: 1520px;
       margin: 0 auto;
@@ -1065,6 +1069,18 @@
       width: min(560px, calc(100vw - 32px));
     }
 
+    #skillDetailDialog {
+      width: min(1120px, calc(100vw - 32px));
+      max-height: calc(100dvh - 32px);
+      overflow: hidden;
+    }
+
+    #skillDetailDialog .dialog-shell {
+      max-height: calc(100dvh - 32px);
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+      overflow: hidden;
+    }
+
     dialog::backdrop {
       background: rgba(10, 18, 32, 0.28);
       backdrop-filter: blur(6px);
@@ -1081,6 +1097,116 @@
       justify-content: flex-end;
       gap: 10px;
       flex-wrap: wrap;
+    }
+
+    .skill-detail-layout {
+      display: grid;
+      grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+      gap: 14px;
+      min-height: min(68vh, 640px);
+      min-height: 0;
+      max-height: min(68vh, 640px);
+    }
+
+    .skill-detail-path-row {
+      display: grid;
+      gap: 6px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--surface-subtle) 76%, transparent);
+    }
+
+    .skill-detail-path-row .path {
+      white-space: normal;
+    }
+
+    .skill-detail-tree,
+    .skill-detail-preview {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--surface-subtle) 76%, transparent);
+    }
+
+    .skill-detail-tree {
+      padding: 10px;
+      overflow: auto;
+    }
+
+    .skill-tree-dir,
+    .skill-tree-file {
+      width: 100%;
+      min-height: 32px;
+      padding: 7px 9px;
+      border-radius: 10px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.4;
+      text-align: left;
+      word-break: break-word;
+    }
+
+    .skill-tree-dir {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .skill-tree-file {
+      color: var(--text);
+      background: transparent;
+      border-color: transparent;
+      box-shadow: none;
+    }
+
+    .skill-tree-file:hover,
+    .skill-tree-file.active {
+      transform: none;
+      filter: none;
+      border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
+      background: color-mix(in srgb, var(--accent) 10%, var(--surface-strong));
+    }
+
+    .skill-detail-preview {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      overflow: hidden;
+    }
+
+    .skill-detail-preview-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .skill-detail-preview-title {
+      min-width: 0;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--path);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .skill-detail-preview textarea {
+      width: 100%;
+      min-height: 0;
+      resize: none;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      padding: 12px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text);
+      white-space: pre;
+      overflow: auto;
     }
 
     @media (max-width: 1120px) {
@@ -1139,6 +1265,19 @@
 
       .system-status-grid {
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      }
+
+      .skill-detail-layout {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+
+      .skill-detail-tree {
+        max-height: 220px;
+      }
+
+      .skill-detail-preview {
+        min-height: 420px;
       }
 
     }
@@ -1393,8 +1532,23 @@
     <form method="dialog" class="dialog-shell">
       <div class="section-head">
         <h2 id="skillDetailTitle" data-i18n="dialog.skillDetail.title">Skill 详情</h2>
+        <div class="section-actions">
+          <button id="skillDetailCopy" class="secondary" type="button" data-action="copy-skill-file" data-i18n="action.copy">复制</button>
+        </div>
       </div>
-      <pre id="skillDetailBody" class="detail-pre"></pre>
+      <div class="skill-detail-path-row">
+        <div class="skill-card-label" data-i18n="common.fullPath">完整路径</div>
+        <div id="skillDetailPath" class="path">-</div>
+      </div>
+      <div class="skill-detail-layout">
+        <div id="skillDetailTree" class="skill-detail-tree" aria-label="Skill 文件树"></div>
+        <div class="skill-detail-preview">
+          <div class="skill-detail-preview-head">
+            <div id="skillDetailFileName" class="skill-detail-preview-title">-</div>
+          </div>
+          <textarea id="skillDetailPreview" readonly spellcheck="false"></textarea>
+        </div>
+      </div>
       <div class="dialog-actions">
         <button class="secondary" value="cancel" data-i18n="action.close">关闭</button>
       </div>
@@ -1447,6 +1601,10 @@
         similarResults: {},
         cardDetails: {},
         cardDetailSeq: 0,
+        skillDetail: {
+          files: [],
+          selectedPath: ""
+        },
         apiBase: new URLSearchParams(location.search).get("api") || (location.protocol === "file:" ? "http://127.0.0.1:8765" : "")
       };
 
@@ -1598,6 +1756,8 @@
           "dialog.editScanRoot.title": "编辑扫描源",
           "dialog.editScanRoot.note": "保存后会立即更新扫描源信息并重新扫描当前目录。",
           "dialog.skillDetail.title": "Skill 详情",
+          "dialog.skillDetail.loading": "正在加载文件内容...",
+          "dialog.skillDetail.empty": "没有可预览的文本文件。",
           "status.ok": "正常",
           "status.missing": "已丢失",
           "status.linked": "挂载",
@@ -1758,6 +1918,8 @@
           "dialog.editScanRoot.title": "Edit Scan Source",
           "dialog.editScanRoot.note": "Saving will immediately update the scan source and rescan the current directory.",
           "dialog.skillDetail.title": "Skill Detail",
+          "dialog.skillDetail.loading": "Loading file content...",
+          "dialog.skillDetail.empty": "No text file can be previewed.",
           "status.ok": "Healthy",
           "status.missing": "Missing",
           "status.linked": "Mounted",
@@ -1888,6 +2050,23 @@
         `;
       }
 
+      async function writeClipboardText(value) {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(value);
+          return;
+        }
+
+        const input = document.createElement("textarea");
+        input.value = value;
+        input.style.position = "fixed";
+        input.style.opacity = "0";
+        document.body.appendChild(input);
+        input.focus();
+        input.select();
+        document.execCommand("copy");
+        document.body.removeChild(input);
+      }
+
       function pathLeafName(value) {
         const text = String(value || "");
         const trimmed = text.replace(/[\\/]+$/, "");
@@ -1898,18 +2077,121 @@
         return segments[segments.length - 1] || trimmed;
       }
 
-      function openSkillDetailDialog(cardId) {
+      function selectedSkillDetailFile() {
+        return state.skillDetail.files.find((file) => file.relative_path === state.skillDetail.selectedPath) || null;
+      }
+
+      function renderSkillDetailTree() {
+        const treeEl = $("#skillDetailTree");
+        const nameEl = $("#skillDetailFileName");
+        const previewEl = $("#skillDetailPreview");
+        const copyButton = $("#skillDetailCopy");
+        if (!treeEl || !nameEl || !previewEl || !copyButton) {
+          return;
+        }
+
+        const files = state.skillDetail.files;
+        if (!files.length) {
+          treeEl.innerHTML = `<div class="empty">${escapeHtml(t("dialog.skillDetail.empty"))}</div>`;
+          nameEl.textContent = "-";
+          previewEl.value = "";
+          copyButton.disabled = true;
+          return;
+        }
+
+        const dirs = new Set();
+        files.forEach((file) => {
+          const parts = String(file.relative_path || "").split("/");
+          parts.pop();
+          let prefix = "";
+          parts.forEach((part) => {
+            prefix = prefix ? `${prefix}/${part}` : part;
+            dirs.add(prefix);
+          });
+        });
+
+        const rows = [
+          ...Array.from(dirs).map((path) => ({ type: "dir", path })),
+          ...files.map((file) => ({ type: "file", path: file.relative_path || file.name || "" }))
+        ].sort((left, right) => {
+          if (left.path === right.path) {
+            return left.type === "dir" ? -1 : 1;
+          }
+          return left.path.localeCompare(right.path);
+        });
+
+        treeEl.innerHTML = rows.map((row) => {
+          const depth = Math.max(row.path.split("/").length - 1, 0);
+          const label = row.path.split("/").pop() || row.path;
+          const padding = 9 + depth * 14;
+          if (row.type === "dir") {
+            return `<div class="skill-tree-dir" style="padding-left:${padding}px;">${escapeHtml(label)}</div>`;
+          }
+          return `
+            <button
+              class="skill-tree-file ${row.path === state.skillDetail.selectedPath ? "active" : ""}"
+              type="button"
+              style="padding-left:${padding}px;"
+              data-action="select-skill-file"
+              data-file="${escapeHtml(row.path)}"
+            >${escapeHtml(label)}</button>
+          `;
+        }).join("");
+
+        const selected = selectedSkillDetailFile();
+        nameEl.textContent = selected?.relative_path || "-";
+        previewEl.value = selected?.content || "";
+        copyButton.disabled = !selected;
+      }
+
+      async function openSkillDetailDialog(cardId) {
         const detail = state.cardDetails[cardId];
         const dialog = $("#skillDetailDialog");
         const titleEl = $("#skillDetailTitle");
-        const bodyEl = $("#skillDetailBody");
-        if (!detail || !dialog || !titleEl || !bodyEl) {
+        const treeEl = $("#skillDetailTree");
+        const previewEl = $("#skillDetailPreview");
+        if (!detail || !dialog || !titleEl || !treeEl || !previewEl) {
           return;
         }
         titleEl.textContent = detail.title || t("dialog.skillDetail.title");
-        bodyEl.textContent = JSON.stringify(detail, null, 2);
+        state.skillDetail = {
+          files: [],
+          selectedPath: ""
+        };
+        treeEl.innerHTML = `<div class="empty">${escapeHtml(t("dialog.skillDetail.loading"))}</div>`;
+        previewEl.value = "";
+        const copyButton = $("#skillDetailCopy");
+        if (copyButton) {
+          copyButton.disabled = true;
+        }
         if (typeof dialog.showModal === "function") {
           dialog.showModal();
+        }
+        const skillPath = detail.path || detail.target_path || "";
+        if (!skillPath) {
+          state.skillDetail.files = [{
+            name: "detail.json",
+            path: "",
+            relative_path: "detail.json",
+            content: JSON.stringify(detail, null, 2)
+          }];
+          state.skillDetail.selectedPath = "detail.json";
+          renderSkillDetailTree();
+          return;
+        }
+        try {
+          const payload = await apiRequest(`/api/skill-detail?path=${encodeURIComponent(skillPath)}`);
+          const files = Array.isArray(payload.files) ? payload.files : [];
+          state.skillDetail.files = files;
+          state.skillDetail.selectedPath = files.find((file) => file.relative_path === "SKILL.md")?.relative_path
+            || files[0]?.relative_path
+            || "";
+          renderSkillDetailTree();
+        } catch (error) {
+          treeEl.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+          if (copyButton) {
+            copyButton.disabled = true;
+          }
         }
       }
 
@@ -2860,6 +3142,23 @@
         }
 
         const action = target.dataset.action;
+        if (action === "select-skill-file") {
+          state.skillDetail.selectedPath = target.dataset.file || "";
+          renderSkillDetailTree();
+          return;
+        }
+
+        if (action === "copy-skill-file") {
+          const selected = selectedSkillDetailFile();
+          if (!selected) {
+            return;
+          }
+          try {
+            await writeClipboardText(selected.content || "");
+          } catch (error) {}
+          return;
+        }
+
         if (action === "toggle-theme") {
           applyTheme(state.theme === "light" ? "dark" : "light");
           renderSystemStatus();
@@ -2884,19 +3183,7 @@
             return;
           }
           try {
-            if (navigator.clipboard?.writeText) {
-              await navigator.clipboard.writeText(path);
-            } else {
-              const input = document.createElement("textarea");
-              input.value = path;
-              input.style.position = "fixed";
-              input.style.opacity = "0";
-              document.body.appendChild(input);
-              input.focus();
-              input.select();
-              document.execCommand("copy");
-              document.body.removeChild(input);
-            }
+            await writeClipboardText(path);
           } catch (error) {}
           return;
         }

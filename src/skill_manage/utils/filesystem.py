@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import PurePosixPath
 from datetime import datetime
 
 from ..config import BINARY_EXTENSIONS, SKIP_DIRS, TEXT_READ_LIMIT
@@ -112,3 +113,57 @@ def read_file_text(file_path: str, limit: int = TEXT_READ_LIMIT) -> str:
     except OSError:
         return ""
 
+
+def collect_skill_text_files(skill_path: str) -> list[dict]:
+    normalized = normalize_path(skill_path)
+    if not is_skill_dir(normalized):
+        raise AppError("目标SKILL目录不存在，或已缺失 SKILL.md。")
+
+    root_real_path = os.path.realpath(normalized)
+    files: list[dict] = []
+    stack = [normalized]
+    visited: set[str] = set()
+
+    while stack:
+        current = stack.pop()
+        try:
+            real_current = os.path.realpath(current)
+        except OSError:
+            continue
+        if real_current in visited:
+            continue
+        visited.add(real_current)
+
+        try:
+            with os.scandir(current) as iterator:
+                entries = sorted(list(iterator), key=lambda entry: (not entry.is_dir(follow_symlinks=False), entry.name.lower()))
+        except OSError:
+            continue
+
+        for entry in reversed(entries):
+            if entry.is_dir(follow_symlinks=False):
+                if entry.name not in SKIP_DIRS:
+                    stack.append(entry.path)
+                continue
+
+            if not entry.is_file(follow_symlinks=False) or not is_text_file(entry.path):
+                continue
+
+            try:
+                file_real_path = os.path.realpath(entry.path)
+            except OSError:
+                continue
+            if os.path.commonpath([root_real_path, file_real_path]) != root_real_path:
+                continue
+
+            relative_path = PurePosixPath(os.path.relpath(entry.path, normalized)).as_posix()
+            files.append(
+                {
+                    "name": entry.name,
+                    "path": normalize_path(entry.path),
+                    "relative_path": relative_path,
+                    "content": read_file_text(entry.path),
+                }
+            )
+
+    return sorted(files, key=lambda item: (item["relative_path"] != "SKILL.md", item["relative_path"].lower()))

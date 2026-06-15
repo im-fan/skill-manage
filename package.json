@@ -1,6 +1,6 @@
 {
   "name": "@im-fan/skill-manage",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Local-first agent skill manager with a global skill-manager CLI.",
   "license": "MIT",
   "bin": {
@@ -17,7 +17,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "test:cli": "node --test test/skill-manager-cli.test.js"
+    "test:cli": "node --test test/skill-manager-cli.test.js",
+    "test:web": "node --test test/skill-detail-ui.test.js"
   },
   "engines": {
     "node": ">=18"

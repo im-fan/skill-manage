@@ -40,6 +40,8 @@ from .services.local_skills import (
 )
 from .services.similarity import find_similar_local_skills, find_similar_skills
 from .services.state import build_state
+from .utils.filesystem import collect_skill_text_files, is_skill_dir
+from .utils.paths import normalize_path
 
 
 def _is_loopback_origin_host(host: str | None) -> bool:
@@ -143,6 +145,24 @@ class SkillManageHandler(BaseHTTPRequestHandler):
                     init_db(conn)
                     payload = fetch_operation_logs_page(conn, page=page, page_size=page_size)
                 self.write_json({"ok": True, **payload})
+                return
+
+            if parsed.path == "/api/skill-detail":
+                query = parse_qs(parsed.query)
+                skill_path = normalize_path(query.get("path", [""])[0])
+                if not is_skill_dir(skill_path):
+                    raise AppError("目标SKILL目录不存在，或已缺失 SKILL.md。", HTTPStatus.NOT_FOUND)
+                files = collect_skill_text_files(skill_path)
+                self.write_json(
+                    {
+                        "ok": True,
+                        "skill": {
+                            "name": skill_path.rsplit("/", 1)[-1],
+                            "path": skill_path,
+                        },
+                        "files": files,
+                    }
+                )
                 return
 
             raise AppError("接口不存在。", HTTPStatus.NOT_FOUND)
