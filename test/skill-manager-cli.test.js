@@ -3,7 +3,7 @@ const fs = require("node:fs");
 const net = require("node:net");
 const os = require("node:os");
 const path = require("node:path");
-const { spawnSync } = require("node:child_process");
+const { spawn, spawnSync } = require("node:child_process");
 const test = require("node:test");
 
 const repoRoot = path.resolve(__dirname, "..");
@@ -29,6 +29,65 @@ function runCli(args, env = {}) {
     },
     encoding: "utf8",
   });
+}
+
+function makeFakePython(home) {
+  const fakePython = path.join(home, "fake-python.js");
+  fs.writeFileSync(fakePython, `#!/usr/bin/env node
+if (process.argv[2] === "-c") process.exit(0);
+setInterval(() => {}, 1000);
+`);
+  fs.chmodSync(fakePython, 0o755);
+  return fakePython;
+}
+
+function spawnPortOwner() {
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [
+      "-e",
+      `
+const net = require("node:net");
+const server = net.createServer();
+server.listen(0, "127.0.0.1", () => {
+  console.log(server.address().port);
+});
+setInterval(() => {}, 1000);
+`,
+    ], {
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    let output = "";
+    child.stdout.on("data", (chunk) => {
+      output += chunk;
+      const port = Number(output.trim());
+      if (Number.isInteger(port) && port > 0) {
+        resolve({ child, port });
+      }
+    });
+    child.once("error", reject);
+    child.once("exit", (code) => {
+      reject(new Error(`port owner exited before listening: ${code}`));
+    });
+  });
+}
+
+function findFreePort() {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.listen(0, "127.0.0.1", () => {
+      const port = server.address().port;
+      server.close(() => resolve(port));
+    });
+  });
+}
+
+function killIfAlive(pid) {
+  if (!pid) return;
+  try {
+    process.kill(pid, "SIGKILL");
+  } catch {
+    // Already gone.
+  }
 }
 
 test("prints help and package version", () => {
@@ -79,25 +138,60 @@ test("status reports stale pid without claiming the service is running", () => {
   assert.doesNotMatch(result.stdout, /^running$/im);
 });
 
-test("start refuses to kill or reuse a port owned by another process", async () => {
-  const server = net.createServer();
-  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+test("start kills a process occupying the configured port and continues startup", async () => {
+  const { child: portOwner, port } = await spawnPortOwner();
+  let startedPid = null;
 
   try {
     const home = makeTempHome();
-    const port = server.address().port;
     fs.writeFileSync(path.join(home, "config.json"), JSON.stringify({
       server: { host: "127.0.0.1", port },
       runtimeHome: home,
     }));
+    const fakePython = makeFakePython(home);
 
-    const result = runCli(["start"], { SKILL_MANAGER_HOME: home });
+    const result = runCli(["start"], { SKILL_MANAGER_HOME: home, SKILL_MANAGER_PYTHON: fakePython });
 
-    assert.notEqual(result.status, 0);
-    assert.match(result.stderr, new RegExp(`Port ${port} is already in use by another process\\.`));
-    assert.match(result.stderr, new RegExp(escapeRegExp(path.join(home, "config.json"))));
-    assert.match(result.stderr, /server\.port/);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, new RegExp(`killed process ${portOwner.pid} occupying port ${port}`));
+    assert.match(result.stdout, /skill-manager started/);
+    assert.equal(portOwner.exitCode, null);
+
+    await new Promise((resolve) => portOwner.once("exit", resolve));
+    const state = JSON.parse(fs.readFileSync(path.join(home, "run", "skill-manager.json"), "utf8"));
+    startedPid = state.pid;
+    assert.notEqual(startedPid, portOwner.pid);
   } finally {
-    server.close();
+    killIfAlive(portOwner.pid);
+    killIfAlive(startedPid);
+  }
+});
+
+test("start restarts an already running managed service", async () => {
+  const home = makeTempHome();
+  const port = await findFreePort();
+  let firstPid = null;
+  let secondPid = null;
+  fs.writeFileSync(path.join(home, "config.json"), JSON.stringify({
+    server: { host: "127.0.0.1", port },
+    runtimeHome: home,
+  }));
+  const fakePython = makeFakePython(home);
+
+  try {
+    const first = runCli(["start"], { SKILL_MANAGER_HOME: home, SKILL_MANAGER_PYTHON: fakePython });
+    assert.equal(first.status, 0, first.stderr);
+    firstPid = JSON.parse(fs.readFileSync(path.join(home, "run", "skill-manager.json"), "utf8")).pid;
+
+    const second = runCli(["start"], { SKILL_MANAGER_HOME: home, SKILL_MANAGER_PYTHON: fakePython });
+
+    assert.equal(second.status, 0, second.stderr);
+    assert.match(second.stdout, /skill-manager restarted/);
+    secondPid = JSON.parse(fs.readFileSync(path.join(home, "run", "skill-manager.json"), "utf8")).pid;
+    assert.notEqual(secondPid, firstPid);
+    assert.throws(() => process.kill(firstPid, 0));
+  } finally {
+    killIfAlive(firstPid);
+    killIfAlive(secondPid);
   }
 });

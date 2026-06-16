@@ -168,7 +168,7 @@ The CLI stores runtime files under `runtimeHome`:
   run/skill-manager.json
 ```
 
-To change the port, edit `server.port` in the config file and run `skill-manager restart`. If the configured port is already owned by another process, `skill-manager start` fails without killing it and prints the config file path plus the `server.port` key to change.
+To change the port, edit `server.port` in the config file and run `skill-manager restart`. `skill-manager start` is restart-friendly: if the service is already running, it stops the old managed process first; if the configured port is occupied, it kills the owning process and then starts the service.
 
 Environment variables:
 

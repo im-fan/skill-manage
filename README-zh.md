@@ -168,7 +168,7 @@ CLI 会把运行文件写入 `runtimeHome`：
   run/skill-manager.json
 ```
 
-如需修改端口，编辑配置文件中的 `server.port` 后运行 `skill-manager restart`。如果配置端口已被其他进程占用，`skill-manager start` 会失败且不会杀掉该进程，并在错误信息里提示实际配置文件路径和需要修改的 `server.port`。
+如需修改端口，编辑配置文件中的 `server.port` 后运行 `skill-manager restart`。`skill-manager start` 支持重启：如果服务已经运行，会先停止旧的托管进程；如果配置端口被占用，会杀掉占用该端口的进程，然后继续启动服务。
 
 环境变量：
 

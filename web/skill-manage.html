@@ -1070,13 +1070,13 @@
     }
 
     #skillDetailDialog {
-      width: min(1120px, calc(100vw - 32px));
-      max-height: calc(100dvh - 32px);
+      width: min(1040px, calc(100vw - 32px));
+      height: min(720px, calc(100dvh - 32px));
       overflow: hidden;
     }
 
     #skillDetailDialog .dialog-shell {
-      max-height: calc(100dvh - 32px);
+      height: 100%;
       grid-template-rows: auto auto minmax(0, 1fr) auto;
       overflow: hidden;
     }
@@ -1103,9 +1103,8 @@
       display: grid;
       grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
       gap: 14px;
-      min-height: min(68vh, 640px);
       min-height: 0;
-      max-height: min(68vh, 640px);
+      height: 100%;
     }
 
     .skill-detail-path-row {
@@ -1119,6 +1118,28 @@
 
     .skill-detail-path-row .path {
       white-space: normal;
+    }
+
+    .skill-detail-copy-actions {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    .copy-status {
+      min-width: 72px;
+      text-align: right;
+      color: var(--ok-text);
+      font-size: 13px;
+      line-height: 1;
+      opacity: 0;
+      transition: opacity 0.18s ease;
+    }
+
+    .copy-status.visible {
+      opacity: 1;
     }
 
     .skill-detail-tree,
@@ -1532,7 +1553,8 @@
     <form method="dialog" class="dialog-shell">
       <div class="section-head">
         <h2 id="skillDetailTitle" data-i18n="dialog.skillDetail.title">Skill 详情</h2>
-        <div class="section-actions">
+        <div class="skill-detail-copy-actions">
+          <span id="skillDetailCopyStatus" class="copy-status" role="status" aria-live="polite"></span>
           <button id="skillDetailCopy" class="secondary" type="button" data-action="copy-skill-file" data-i18n="action.copy">复制</button>
         </div>
       </div>
@@ -1609,6 +1631,7 @@
       };
 
       const $ = (selector) => document.querySelector(selector);
+      let skillDetailCopyStatusTimer = null;
       const I18N = {
         zh: {
           "hero.subtitle": "统一管理 SKILL仓库扫描、Agent 挂载与失效清理",
@@ -1758,6 +1781,7 @@
           "dialog.skillDetail.title": "Skill 详情",
           "dialog.skillDetail.loading": "正在加载文件内容...",
           "dialog.skillDetail.empty": "没有可预览的文本文件。",
+          "dialog.skillDetail.copySuccess": "复制成功",
           "status.ok": "正常",
           "status.missing": "已丢失",
           "status.linked": "挂载",
@@ -1920,6 +1944,7 @@
           "dialog.skillDetail.title": "Skill Detail",
           "dialog.skillDetail.loading": "Loading file content...",
           "dialog.skillDetail.empty": "No text file can be previewed.",
+          "dialog.skillDetail.copySuccess": "Copied",
           "status.ok": "Healthy",
           "status.missing": "Missing",
           "status.linked": "Mounted",
@@ -2081,6 +2106,29 @@
         return state.skillDetail.files.find((file) => file.relative_path === state.skillDetail.selectedPath) || null;
       }
 
+      function setSkillDetailCopyStatus(message = "", options = {}) {
+        const copyStatusEl = $("#skillDetailCopyStatus");
+        if (skillDetailCopyStatusTimer) {
+          clearTimeout(skillDetailCopyStatusTimer);
+          skillDetailCopyStatusTimer = null;
+        }
+        if (!copyStatusEl) {
+          return;
+        }
+        copyStatusEl.textContent = message;
+        copyStatusEl.classList.toggle("visible", Boolean(message));
+        if (message && options.autoHide) {
+          skillDetailCopyStatusTimer = setTimeout(() => {
+            setSkillDetailCopyStatus("");
+          }, 2000);
+        }
+      }
+
+      function closeSkillDetailDialog() {
+        document.body.classList.remove("modal-open");
+        setSkillDetailCopyStatus("");
+      }
+
       function renderSkillDetailTree() {
         const treeEl = $("#skillDetailTree");
         const nameEl = $("#skillDetailFileName");
@@ -2096,6 +2144,7 @@
           nameEl.textContent = "-";
           previewEl.value = "";
           copyButton.disabled = true;
+          setSkillDetailCopyStatus("");
           return;
         }
 
@@ -2142,18 +2191,23 @@
         nameEl.textContent = selected?.relative_path || "-";
         previewEl.value = selected?.content || "";
         copyButton.disabled = !selected;
+        setSkillDetailCopyStatus("");
       }
 
       async function openSkillDetailDialog(cardId) {
         const detail = state.cardDetails[cardId];
         const dialog = $("#skillDetailDialog");
         const titleEl = $("#skillDetailTitle");
+        const pathEl = $("#skillDetailPath");
         const treeEl = $("#skillDetailTree");
         const previewEl = $("#skillDetailPreview");
-        if (!detail || !dialog || !titleEl || !treeEl || !previewEl) {
+        if (!detail || !dialog || !titleEl || !pathEl || !treeEl || !previewEl) {
           return;
         }
         titleEl.textContent = detail.title || t("dialog.skillDetail.title");
+        const skillPath = detail.path || detail.target_path || "";
+        pathEl.textContent = skillPath || "-";
+        pathEl.setAttribute("title", skillPath || "-");
         state.skillDetail = {
           files: [],
           selectedPath: ""
@@ -2164,10 +2218,11 @@
         if (copyButton) {
           copyButton.disabled = true;
         }
+        setSkillDetailCopyStatus("");
         if (typeof dialog.showModal === "function") {
           dialog.showModal();
         }
-        const skillPath = detail.path || detail.target_path || "";
+        document.body.classList.add("modal-open");
         if (!skillPath) {
           state.skillDetail.files = [{
             name: "detail.json",
@@ -2192,6 +2247,7 @@
           if (copyButton) {
             copyButton.disabled = true;
           }
+          setSkillDetailCopyStatus("");
         }
       }
 
@@ -3155,6 +3211,7 @@
           }
           try {
             await writeClipboardText(selected.content || "");
+            setSkillDetailCopyStatus(t("dialog.skillDetail.copySuccess"), { autoHide: true });
           } catch (error) {}
           return;
         }
@@ -3761,6 +3818,7 @@
           event.preventDefault();
           void confirmMoveSkill();
         });
+        $("#skillDetailDialog")?.addEventListener("close", closeSkillDetailDialog);
         $("#operationLog")?.addEventListener("scroll", handleOperationLogScroll);
         resetAgentManageForm();
         renderAll();

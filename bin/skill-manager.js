@@ -144,9 +144,72 @@ function commandForPid(pid) {
   return result.stdout.trim();
 }
 
+function isZombieProcess(pid) {
+  if (process.platform === "win32") return false;
+  const result = spawnSync("ps", ["-p", String(pid), "-o", "stat="], { encoding: "utf8" });
+  if (result.status !== 0) return false;
+  return result.stdout.trim().includes("Z");
+}
+
 function isSkillManagerProcess(pid) {
   const command = commandForPid(pid);
   return command.includes("skill_manage") || command.includes("skill-manage-server.py");
+}
+
+function pidsForPort(port) {
+  const commands =
+    process.platform === "win32"
+      ? []
+      : [
+          ["lsof", ["-ti", `tcp:${port}`]],
+          ["fuser", [`${port}/tcp`]],
+        ];
+
+  for (const [command, args] of commands) {
+    const result = spawnSync(command, args, { encoding: "utf8" });
+    if (result.error || (result.status !== 0 && !result.stdout)) continue;
+    const pids = result.stdout
+      .split(/\s+/)
+      .map((value) => Number(value.trim()))
+      .filter((pid) => Number.isInteger(pid) && pid > 0 && pid !== process.pid);
+    if (pids.length > 0) return [...new Set(pids)];
+  }
+
+  return [];
+}
+
+async function killProcess(pid, label) {
+  if (!isProcessAlive(pid)) return;
+  process.kill(pid, "SIGTERM");
+  let stopped = await waitForStop(pid, 5000);
+  if (!stopped && isProcessAlive(pid)) {
+    process.kill(pid, "SIGKILL");
+    stopped = await waitForStop(pid, 2000);
+  }
+  if (isProcessAlive(pid) && !isZombieProcess(pid)) {
+    throw new Error(`Failed to stop process ${pid}${label ? ` ${label}` : ""}.`);
+  }
+}
+
+async function freePort(host, port) {
+  if (await isPortFree(host, port)) return [];
+
+  const killed = [];
+  const pids = pidsForPort(port);
+  if (pids.length === 0) {
+    throw new Error(`Port ${port} is already in use, but the owning process could not be found.`);
+  }
+
+  for (const pid of pids) {
+    await killProcess(pid, `occupying port ${port}`);
+    killed.push(pid);
+  }
+
+  if (!(await isPortFree(host, port))) {
+    throw new Error(`Port ${port} is still in use after killing process ${killed.join(", ")}.`);
+  }
+
+  return killed;
 }
 
 function getStatus(config, paths) {
@@ -220,18 +283,14 @@ async function start() {
   const status = getStatus(config, paths);
 
   if (status.state === "running") {
-    console.log("skill-manager is already running");
-    printStatus(configInfo);
-    return;
+    await killProcess(status.pid, "managed by skill-manager");
+    cleanupRunFiles(paths);
+    console.log(`skill-manager restarted from pid ${status.pid}`);
   }
 
-  const free = await isPortFree(config.server.host, config.server.port);
-  if (!free) {
-    throw new Error(
-      `Port ${config.server.port} is already in use by another process.\n` +
-        `Please edit ${process.env.SKILL_MANAGER_CONFIG ? `$SKILL_MANAGER_CONFIG target file: ${cfgPath}` : cfgPath} and change server.port, then run:\n` +
-        "  skill-manager start"
-    );
+  const killedPortPids = await freePort(config.server.host, config.server.port);
+  for (const pid of killedPortPids) {
+    console.log(`killed process ${pid} occupying port ${config.server.port}`);
   }
 
   const pythonBin = selectPython();
@@ -284,12 +343,7 @@ async function stop({ quiet = false } = {}) {
     return;
   }
 
-  process.kill(status.pid, "SIGTERM");
-  const stopped = await waitForStop(status.pid, 5000);
-  if (!stopped) {
-    process.kill(status.pid, "SIGKILL");
-    await waitForStop(status.pid, 2000);
-  }
+  await killProcess(status.pid, "managed by skill-manager");
   cleanupRunFiles(paths);
   if (!quiet) console.log("skill-manager stopped");
 }
@@ -309,6 +363,9 @@ function waitForStop(pid, timeoutMs) {
   return new Promise((resolve) => {
     const timer = setInterval(() => {
       if (!isProcessAlive(pid)) {
+        clearInterval(timer);
+        resolve(true);
+      } else if (isZombieProcess(pid)) {
         clearInterval(timer);
         resolve(true);
       } else if (Date.now() - started > timeoutMs) {

@@ -110,13 +110,7 @@ export SKILL_MANAGER_HOME=/tmp/skill-manager-cli-home
 node bin/skill-manager.js status
 ```
 
-如果你的机器上 `8765` 端口已经被占用，可以先写入一个临时配置，把测试端口改成 `18765`：
-
-```bash
-node -e 'const fs=require("fs"); const home=process.env.SKILL_MANAGER_HOME; fs.writeFileSync(`${home}/config.json`, JSON.stringify({server:{host:"127.0.0.1",port:18765}, runtimeHome:home}, null, 2)+"\n");'
-```
-
-再执行启动、状态和停止：
+再执行启动、状态和停止。`start` 会在服务已运行时先重启旧进程；如果配置端口被占用，会先释放端口再继续启动：
 
 ```bash
 node bin/skill-manager.js start
@@ -379,15 +373,15 @@ npm publish --dry-run
 
 ### 端口被占用
 
-如果 `skill-manager start` 发现配置端口被其他进程占用，会失败并提示修改配置文件中的 `server.port`。CLI 不会杀掉未知进程。
+如果 `skill-manager start` 发现配置端口被占用，会杀掉占用该端口的进程，然后继续启动服务。服务已运行时，再次执行 `start` 等同于先停止旧的托管进程再启动。
 
-处理方式：
+查看当前状态：
 
 ```bash
 skill-manager status
 ```
 
-然后编辑提示中的配置文件，例如：
+如果你确实想换端口，再编辑配置文件，例如：
 
 ```text
 ~/.skill-manager/config.json
@@ -399,7 +393,7 @@ skill-manager status
 "port": 8765
 ```
 
-改成未占用端口，例如：
+改成目标端口，例如：
 
 ```json
 "port": 8766
