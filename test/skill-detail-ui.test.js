@@ -44,3 +44,11 @@ test("skill detail copy feedback is left of right-aligned button and auto-hides"
   assert.match(html, /let skillDetailCopyStatusTimer\s*=\s*null/);
   assert.match(html, /setTimeout\(\(\)\s*=>\s*{\s*setSkillDetailCopyStatus\(""\);\s*},\s*2000\)/s);
 });
+
+test("git scan root card title prefers note then git project name", () => {
+  const html = fs.readFileSync(htmlPath, "utf8");
+
+  assert.match(html, /function scanRootDisplayName\(root\)/);
+  assert.match(html, /String\(root\.note \|\| ""\)\.trim\(\) \|\| gitProjectName\(root\.git_url\) \|\| pathLeafName\(root\.path\)/);
+  assert.match(html, /<strong>\$\{escapeHtml\(scanRootDisplayName\(root\)\)\}<\/strong>/);
+});

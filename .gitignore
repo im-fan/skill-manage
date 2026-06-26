@@ -8,3 +8,5 @@ logs/
 doc/
 /tests/
 .idea
+node_modules/
+repos/

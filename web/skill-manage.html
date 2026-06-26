@@ -309,6 +309,14 @@
       background: var(--danger-bg);
     }
 
+    .service-dialog-message {
+      margin: 0;
+      color: var(--danger-text);
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
     .badge.info {
       color: var(--info-text);
       border-color: var(--info-line);
@@ -1343,7 +1351,6 @@
       <div class="hero-top">
         <div class="hero-brand">
           <h1>Skill Manage</h1>
-          <p data-i18n="hero.subtitle">统一管理 SKILL仓库扫描、Agent 挂载与失效清理</p>
         </div>
         <div class="hero-actions">
           <div id="languageToggle" class="language-toggle" aria-label="Language Toggle">
@@ -1373,11 +1380,12 @@
                 <select id="rootMode">
                   <option value="skill_root" data-i18n="local.rootMode.skill_root">Skill 根目录</option>
                   <option value="skill_dir" data-i18n="local.rootMode.skill_dir">单个 Skill 目录</option>
+                  <option value="git_repo" data-i18n="local.rootMode.git_repo">Git 仓库</option>
                 </select>
               </label>
 
-              <label class="scan-root-field">
-                <span class="label" data-i18n="common.path">路径</span>
+              <label class="scan-root-field" id="rootPathField">
+                <span class="label" id="rootPathLabel" data-i18n="common.path">路径</span>
                 <input id="rootPath" type="text" data-i18n-placeholder="placeholder.pathExample" placeholder="/Users/you/Desktop/skills">
               </label>
 
@@ -1390,7 +1398,6 @@
                 <button type="submit" data-i18n="action.saveAndScan">保存并扫描</button>
               </div>
             </div>
-            <span class="muted" data-i18n-html="local.newScanRoot.note">`skill_root` 会递归找出含 `SKILL.md` 的目录；`skill_dir` 只收录当前目录。</span>
           </form>
           <div class="section-head" style="margin-top:18px;">
             <h3 data-i18n="local.scanRootList.title">扫描源列表</h3>
@@ -1415,7 +1422,7 @@
         </div>
         <div class="row-actions">
           <button data-action="find-local-similar" id="find-local-similar-btn" data-i18n="action.scanSimilar">扫描相似</button>
-          <span class="muted" id="local-similar-status" data-i18n="similarity.localStatus">对比 SKILL仓库中状态正常的 Skill 名称和文件内容</span>
+          <span class="muted" id="local-similar-status"></span>
         </div>
         <div id="local-similar-results" style="display:none;"></div>
       </article>
@@ -1424,7 +1431,6 @@
         <div class="section-head section-head-search">
           <div>
             <h2 data-i18n="tab.local">SKILL仓库</h2>
-            <div class="muted" data-i18n="local.repository.note">按名称、路径或描述筛选，结果以卡片方式展示。</div>
           </div>
           <div class="section-search">
             <input id="skillSearch" type="text" data-i18n-placeholder="placeholder.filterByNamePath" placeholder="按名称 / 路径过滤">
@@ -1444,7 +1450,6 @@
           <div class="section-head">
             <div>
               <h2 id="agentManageFormTitle" data-i18n="agentManage.form.newTitle">新增 Agent</h2>
-              <div class="muted" data-i18n="agentManage.form.note">支持手动新增、编辑目录信息，并将 Agent 控制权全部收敛到数据库。</div>
             </div>
             <div class="section-actions">
               <button class="secondary" type="button" data-action="agent-manage-new" data-i18n="action.new">新建</button>
@@ -1472,14 +1477,12 @@
               <button id="agentManageSubmit" type="submit" data-i18n="agentManage.form.createButton">创建 Agent</button>
               <button class="secondary" type="button" data-action="auto-discover-agents" data-i18n="agentManage.form.autoDiscover">自动检索内置 Agent</button>
             </div>
-            <div class="note" data-i18n-html="agentManage.form.autoDiscoverNote">自动检索仅收录 `Codex / ClaudeCode / OpenClaw / Hermes` 的默认目录；手动新增适合团队自定义 Agent。</div>
           </form>
         </article>
         <article class="card">
           <div class="section-head">
             <div>
               <h2 data-i18n="tab.agentList">Agent 列表</h2>
-              <div class="muted" data-i18n="agentManage.list.note">支持查看、编辑、设为当前 Agent，以及显示/隐藏控制。</div>
             </div>
             <div id="agentManageSummary" class="agent-manage-summary"></div>
           </div>
@@ -1526,15 +1529,17 @@
         <h2 data-i18n="dialog.editScanRoot.title">编辑扫描源</h2>
       </div>
       <input id="scanRootEditOldPath" type="hidden">
+    <input id="scanRootEditGitUrl" type="hidden">
       <label class="scan-root-field">
         <span class="label" data-i18n="common.type">类型</span>
         <select id="scanRootEditMode">
           <option value="skill_root" data-i18n="local.rootMode.skill_root">Skill 根目录</option>
           <option value="skill_dir" data-i18n="local.rootMode.skill_dir">单个 Skill 目录</option>
+          <option value="git_repo" data-i18n="local.rootMode.git_repo">Git 仓库</option>
         </select>
       </label>
       <label class="scan-root-field">
-        <span class="label" data-i18n="common.path">路径</span>
+        <span class="label" id="scanRootEditPathLabel" data-i18n="common.path">路径</span>
         <input id="scanRootEditPath" type="text" data-i18n-placeholder="placeholder.pathExample" placeholder="/Users/you/Desktop/skills">
       </label>
       <label class="scan-root-field">
@@ -1545,6 +1550,18 @@
       <div class="dialog-actions">
         <button class="secondary" value="cancel" data-i18n="action.cancel">取消</button>
         <button id="scanRootEditConfirm" value="confirm" type="submit" data-i18n="action.saveAndRescan">保存并重扫</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="serviceErrorDialog">
+    <form method="dialog" class="dialog-shell">
+      <div class="section-head">
+        <h2 data-i18n="dialog.serviceError.title">服务提示</h2>
+      </div>
+      <p id="serviceErrorMessage" class="service-dialog-message"></p>
+      <div class="dialog-actions">
+        <button value="confirm" data-i18n="action.close">关闭</button>
       </div>
     </form>
   </dialog>
@@ -1667,6 +1684,7 @@
           "action.saveUpdate": "保存更新",
           "common.type": "类型",
           "common.path": "路径",
+          "common.repoUrl": "仓库地址",
           "common.note": "备注",
           "common.defaultPath": "默认目录",
           "common.currentPath": "当前目录",
@@ -1677,9 +1695,11 @@
           "common.serviceUrl": "服务地址",
           "common.sqlite": "SQLite3",
           "common.python": "Python",
+          "common.configPath": "配置地址",
           "common.connected": "已连接",
           "common.disconnected": "未连接",
           "placeholder.pathExample": "/Users/you/Desktop/skills",
+          "placeholder.gitRepoUrl": "git@github.com:user/repo.git",
           "placeholder.scanRootNote": "例如：个人技能库 / 团队沉淀",
           "placeholder.filterByNamePath": "按名称 / 路径过滤",
           "placeholder.agentCode": "例如：codex-proxy",
@@ -1690,11 +1710,13 @@
           "local.newScanRoot.title": "新增扫描源",
           "local.rootMode.skill_root": "Skill 根目录",
           "local.rootMode.skill_dir": "单个 Skill 目录",
+          "local.rootMode.git_repo": "Git 仓库",
           "local.newScanRoot.note": "<span class=\"code\">skill_root</span> 会递归找出含 <span class=\"code\">SKILL.md</span> 的目录；<span class=\"code\">skill_dir</span> 只收录当前目录。",
           "local.scanRootList.title": "扫描源列表",
           "local.repository.note": "按名称、路径或描述筛选，结果以卡片方式展示。",
           "local.scanRoot.empty": "还没有扫描源。添加根目录后会把含 <span class=\"code\">SKILL.md</span> 的目录收录到SKILL仓库。",
           "local.scanRoot.kicker": "扫描源",
+          "local.scanRoot.gitKicker": "Git 仓库",
           "local.scanRoot.skillCount": "Skill 数量 {count}",
           "local.scanRoot.lastScan": "最近扫描：{time}",
           "local.scanRoot.statusTitle": "扫描状态",
@@ -1778,6 +1800,7 @@
           "dialog.moveSkill.confirmMounted": "该 Skill 当前已挂载到这些 agent 目录：{agents}。继续移动会同步调整这些挂载链接，是否继续？",
           "dialog.editScanRoot.title": "编辑扫描源",
           "dialog.editScanRoot.note": "保存后会立即更新扫描源信息并重新扫描当前目录。",
+          "dialog.serviceError.title": "服务提示",
           "dialog.skillDetail.title": "Skill 详情",
           "dialog.skillDetail.loading": "正在加载文件内容...",
           "dialog.skillDetail.empty": "没有可预览的文本文件。",
@@ -1830,6 +1853,7 @@
           "action.saveUpdate": "Save Update",
           "common.type": "Type",
           "common.path": "Path",
+          "common.repoUrl": "Repository URL",
           "common.note": "Note",
           "common.defaultPath": "Default Path",
           "common.currentPath": "Current Path",
@@ -1840,6 +1864,7 @@
           "common.serviceUrl": "Service URL",
           "common.sqlite": "SQLite3",
           "common.python": "Python",
+          "common.configPath": "Config Path",
           "common.connected": "Connected",
           "common.disconnected": "Disconnected",
           "placeholder.pathExample": "/Users/you/Desktop/skills",
@@ -1853,11 +1878,13 @@
           "local.newScanRoot.title": "New Scan Source",
           "local.rootMode.skill_root": "Skill Root Directory",
           "local.rootMode.skill_dir": "Single Skill Directory",
+          "local.rootMode.git_repo": "Git Repository",
           "local.newScanRoot.note": "<span class=\"code\">skill_root</span> recursively discovers directories containing <span class=\"code\">SKILL.md</span>; <span class=\"code\">skill_dir</span> only registers the current directory.",
           "local.scanRootList.title": "Scan Source List",
           "local.repository.note": "Filter by name, path, or description and browse results as cards.",
           "local.scanRoot.empty": "No scan source yet. Add a root and directories containing <span class=\"code\">SKILL.md</span> will be collected into the SKILL repository.",
           "local.scanRoot.kicker": "Scan Source",
+          "local.scanRoot.gitKicker": "Git Repository",
           "local.scanRoot.skillCount": "Skill Count {count}",
           "local.scanRoot.lastScan": "Last scan: {time}",
           "local.scanRoot.statusTitle": "Scan Status",
@@ -1941,6 +1968,7 @@
           "dialog.moveSkill.confirmMounted": "This skill is currently mounted into these agent directories: {agents}. Continuing will update those mounted links as well. Continue?",
           "dialog.editScanRoot.title": "Edit Scan Source",
           "dialog.editScanRoot.note": "Saving will immediately update the scan source and rescan the current directory.",
+          "dialog.serviceError.title": "Service Message",
           "dialog.skillDetail.title": "Skill Detail",
           "dialog.skillDetail.loading": "Loading file content...",
           "dialog.skillDetail.empty": "No text file can be previewed.",
@@ -2102,6 +2130,23 @@
         return segments[segments.length - 1] || trimmed;
       }
 
+      function gitProjectName(value) {
+        const text = String(value || "").trim().replace(/\.git$/i, "").replace(/[\\/]+$/, "");
+        if (!text) {
+          return "";
+        }
+        const normalized = text.includes("://") ? text.split("://", 2)[1] : text;
+        const pathPart = normalized.includes(":") ? normalized.split(":").pop() : normalized;
+        return pathLeafName(pathPart);
+      }
+
+      function scanRootDisplayName(root) {
+        if (root?.mode !== "git_repo") {
+          return pathLeafName(root?.path);
+        }
+        return String(root.note || "").trim() || gitProjectName(root.git_url) || pathLeafName(root.path);
+      }
+
       function selectedSkillDetailFile() {
         return state.skillDetail.files.find((file) => file.relative_path === state.skillDetail.selectedPath) || null;
       }
@@ -2127,6 +2172,21 @@
       function closeSkillDetailDialog() {
         document.body.classList.remove("modal-open");
         setSkillDetailCopyStatus("");
+      }
+
+      function showServiceError(message) {
+        const dialog = $("#serviceErrorDialog");
+        const messageEl = $("#serviceErrorMessage");
+        if (!messageEl) {
+          window.alert(message || t("error.requestFailed", { status: "-" }));
+          return;
+        }
+        messageEl.textContent = message || t("error.requestFailed", { status: "-" });
+        if (dialog && typeof dialog.showModal === "function") {
+          dialog.showModal();
+          return;
+        }
+        window.alert(messageEl.textContent);
       }
 
       function renderSkillDetailTree() {
@@ -2257,14 +2317,23 @@
         const modeInput = $("#scanRootEditMode");
         const pathInput = $("#scanRootEditPath");
         const noteInput = $("#scanRootEditNote");
+        const gitUrlInput = $("#scanRootEditGitUrl");
         const root = state.scanRoots.find((item) => item.path === rootPath);
         if (!dialog || !oldPathInput || !modeInput || !pathInput || !noteInput || !root) {
           return;
         }
         oldPathInput.value = root.path || "";
         modeInput.value = root.mode || "skill_root";
-        pathInput.value = root.path || "";
+        if (root.mode === "git_repo") {
+          pathInput.value = root.git_url || root.path || "";
+        } else {
+          pathInput.value = root.path || "";
+        }
         noteInput.value = root.note || "";
+        if (gitUrlInput) {
+          gitUrlInput.value = root.git_url || "";
+        }
+        updateEditDialogModeUI();
         if (typeof dialog.showModal === "function") {
           dialog.showModal();
         }
@@ -2519,27 +2588,14 @@
           <div class="stat">
             <span class="muted">${escapeHtml(state.language === "en" ? "Scan Sources" : "扫描源")}</span>
             <strong>${state.scanRoots.length}</strong>
-            <span class="muted">${escapeHtml(state.language === "en" ? "SKILL repository root configuration" : "SKILL仓库入口配置")}</span>
           </div>
           <div class="stat">
             <span class="muted">${escapeHtml(t("tab.local"))}</span>
             <strong>${activeSkills}</strong>
-            <span class="muted">${escapeHtml(state.language === "en" ? `Healthy, missing: ${missingSkills}` : `状态正常，missing: ${missingSkills}`)}</span>
           </div>
           <div class="stat">
             <span class="muted">${escapeHtml(state.language === "en" ? "Agent Count" : "Agent 数量")}</span>
             <strong>${state.agents.length}</strong>
-            <span class="muted">${escapeHtml(state.language === "en" ? `Visible ${visibleAgents().length}` : `显示中 ${visibleAgents().length} 个`)}</span>
-          </div>
-          <div class="stat">
-            <span class="muted">${escapeHtml(state.language === "en" ? "Managed Links" : "已托管链接")}</span>
-            <strong>${managedLinks}</strong>
-            <span class="muted">${escapeHtml(state.language === "en" ? "Symlinks inside agent directories" : "agent 全局目录中的软链接")}</span>
-          </div>
-          <div class="stat">
-            <span class="muted">${escapeHtml(state.language === "en" ? "Invalid Links" : "失效链接")}</span>
-            <strong>${invalidLinks}</strong>
-            <span class="muted">${escapeHtml(state.language === "en" ? "Can be cleaned in one click" : "可一键清理")}</span>
           </div>
         `;
       }
@@ -2560,7 +2616,7 @@
 
         container.innerHTML = state.scanRoots.map((root) => `
           <div class="list-item skill-card" data-card-id="${registerCardDetail({
-            title: `${t("local.scanRoot.kicker")}: ${pathLeafName(root.path) || "-"}`,
+            title: `${root.mode === "git_repo" ? t("local.scanRoot.gitKicker") : t("local.scanRoot.kicker")}: ${scanRootDisplayName(root) || "-"}`,
             type: "scan_root",
             path: root.path || "",
             mode: root.mode || "",
@@ -2574,9 +2630,9 @@
           })}" data-scan-root-path="${escapeHtml(root.path)}">
             <div class="skill-card-head">
               <div class="skill-card-title">
-                <div class="skill-card-kicker">${escapeHtml(t("local.scanRoot.kicker"))}</div>
+                <div class="skill-card-kicker">${escapeHtml(root.mode === "git_repo" ? t("local.scanRoot.gitKicker") : t("local.scanRoot.kicker"))}</div>
                 <div class="skill-card-mainline">
-                  <strong>${escapeHtml(pathLeafName(root.path))}</strong>
+                  <strong>${escapeHtml(scanRootDisplayName(root))}</strong>
                 </div>
               </div>
             </div>
@@ -2587,6 +2643,7 @@
               ${root.note ? `<span class="pill">${escapeHtml(root.note)}</span>` : ""}
               <span class="note">${escapeHtml(t("local.scanRoot.lastScan", { time: root.last_scan_at || "-" }))}</span>
             </div>
+            ${root.git_url ? `<div class="skill-card-section"><div class="skill-card-label">${escapeHtml(t("common.repoUrl"))}</div><div class="path">${escapeHtml(root.git_url)}</div></div>` : ""}
             <div class="skill-card-section">${renderPathRow({ label: t("common.fullPath"), fullPath: root.path })}</div>
             <div class="skill-card-section">
               <div class="skill-card-label">${escapeHtml(t("local.scanRoot.statusTitle"))}</div>
@@ -2876,14 +2933,6 @@
         host.innerHTML = `
           <article class="card agent-top-card">
             <div class="section-head">
-              <div>
-                <h2>${escapeHtml(t("agentList.focusTitle"))}</h2>
-                <div class="muted">${escapeHtml(t("agentList.focusNote", { name: agent.display_name || agent.agent_code }))}</div>
-              </div>
-            </div>
-          </article>
-          <article class="card agent-top-card">
-            <div class="section-head">
               <div class="agent-title-group">
                 <h2>${escapeHtml(t("agentList.currentTitle"))}</h2>
                 ${renderAgentInlineSwitcher(agent, visible)}
@@ -2905,7 +2954,6 @@
                   <span class="pill">${escapeHtml(t("agentList.searchReady", { count: availableLocalCount }))}</span>
                   <span class="pill">${escapeHtml(t("agentList.lastScan", { time: target.last_scan_at || "-" }))}</span>
                 </div>
-                <div class="note">${escapeHtml(t("agentList.summaryNote", { name: agent.display_name }))}</div>
               </div>
               <div class="agent-actions">
                 <button data-action="save-agent-path" data-agent="${escapeHtml(agent.agent_code)}" title="${escapeHtml(t("agentList.savePathTitle"))}">${escapeHtml(t("action.savePath"))}</button>
@@ -2928,7 +2976,7 @@
             </div>
             <div class="row-actions">
               <button data-action="find-similar" data-agent="${escapeHtml(agent.agent_code)}" id="find-similar-btn-${agent.agent_code}">${escapeHtml(t("action.scanSimilar"))}</button>
-              <span class="muted" id="similar-status-${agent.agent_code}">${escapeHtml(t("similarity.agentStatus"))}</span>
+              <span class="muted" id="similar-status-${agent.agent_code}"></span>
             </div>
             <div id="similar-results-${agent.agent_code}" style="display:none;"></div>
           </article>
@@ -2936,7 +2984,6 @@
             <article class="card">
               <div class="section-head">
                 <h2>${escapeHtml(t("agentList.addSkillTitle"))}</h2>
-                <div class="muted">${escapeHtml(t("agentList.addSkillNote"))}</div>
               </div>
               <div class="list skill-grid">
                 <div class="skill-search-shell">
@@ -2979,7 +3026,6 @@
             <article class="card">
               <div class="section-head">
                 <h2>${escapeHtml(t("agentList.currentFolderTitle", { name: agent.display_name }))}</h2>
-                <div class="muted">${escapeHtml(t("agentList.currentFolderNote", { name: agent.display_name }))}</div>
               </div>
               <div class="list skill-grid">
                 <div class="skill-search-shell">
@@ -3070,8 +3116,8 @@
             value: state.runtime.dbPath || "-"
           },
           {
-            label: t("common.python"),
-            value: state.runtime.pythonVersion || "-"
+            label: t("common.configPath"),
+            value: "~/.skill-manager"
           }
         ];
 
@@ -3163,11 +3209,15 @@
           } else {
             await fetchState();
           }
+          renderAll();
+          return true;
         } catch (error) {
           state.runtime.connected = false;
           state.runtime.error = error.message;
+          showServiceError(error.message);
+          renderAll();
+          return false;
         }
-        renderAll();
       }
 
       async function handleClick(event) {
@@ -3491,31 +3541,44 @@
       async function handleSubmit(event) {
         if (event.target.id === "scanRootForm") {
           event.preventDefault();
-          await withRefresh(() => {
+          const saved = await withRefresh(() => {
             const mode = $("#rootMode").value;
             const inputPath = $("#rootPath").value;
             const note = $("#rootNote").value;
+            const gitUrl = mode === "git_repo" ? inputPath : "";
             return apiRequest("/api/scan-roots", {
               method: "POST",
-              body: { path: inputPath, mode, note }
+              body: { path: inputPath, mode, note, git_url: gitUrl }
             });
           }, "扫描源已保存并完成扫描");
-          $("#rootPath").value = "";
-          $("#rootNote").value = "";
+          if (saved) {
+            $("#rootPath").value = "";
+            $("#rootNote").value = "";
+          }
           return;
         }
 
         if (event.target.id === "scanRootEditForm") {
           event.preventDefault();
           const dialog = $("#scanRootEditDialog");
+          if (event.submitter?.value === "cancel") {
+            if (dialog?.open) {
+              dialog.close();
+            }
+            return;
+          }
           try {
+            const editMode = $("#scanRootEditMode").value;
+            const editPath = $("#scanRootEditPath").value;
+            const oldPathValue = $("#scanRootEditOldPath").value;
             const payload = await apiRequest("/api/scan-roots/update", {
               method: "POST",
               body: {
-                old_path: $("#scanRootEditOldPath").value,
-                path: $("#scanRootEditPath").value,
-                mode: $("#scanRootEditMode").value,
-                note: $("#scanRootEditNote").value
+                old_path: oldPathValue,
+                path: editMode === "git_repo" ? oldPathValue : editPath,
+                mode: editMode,
+                note: $("#scanRootEditNote").value,
+                git_url: editMode === "git_repo" ? editPath : ""
               }
             });
             if (payload?.state) {
@@ -3529,6 +3592,7 @@
           } catch (error) {
             state.runtime.connected = false;
             state.runtime.error = error.message;
+            showServiceError(error.message);
           }
           renderAll();
           return;
@@ -3802,9 +3866,44 @@
         );
       }
 
+      function updateRootModeUI() {
+        const mode = $("#rootMode")?.value || "skill_root";
+        const pathInput = $("#rootPath");
+        const pathLabel = $("#rootPathLabel");
+        if (!pathInput || !pathLabel) return;
+        if (mode === "git_repo") {
+          pathLabel.textContent = t("common.repoUrl");
+          pathInput.placeholder = t("placeholder.gitRepoUrl");
+          pathInput.dataset.i18nPlaceholder = "placeholder.gitRepoUrl";
+        } else {
+          pathLabel.textContent = t("common.path");
+          pathInput.placeholder = t("placeholder.pathExample");
+          pathInput.dataset.i18nPlaceholder = "placeholder.pathExample";
+        }
+      }
+
+      function updateEditDialogModeUI() {
+        const mode = $("#scanRootEditMode")?.value || "skill_root";
+        const pathInput = $("#scanRootEditPath");
+        const pathLabel = $("#scanRootEditPathLabel");
+        if (!pathInput || !pathLabel) return;
+        if (mode === "git_repo") {
+          pathLabel.textContent = t("common.repoUrl");
+          pathInput.placeholder = t("placeholder.gitRepoUrl");
+          pathInput.dataset.i18nPlaceholder = "placeholder.gitRepoUrl";
+        } else {
+          pathLabel.textContent = t("common.path");
+          pathInput.placeholder = t("placeholder.pathExample");
+          pathInput.dataset.i18nPlaceholder = "placeholder.pathExample";
+        }
+      }
+
       async function init() {
         applyTheme(state.theme);
         applyLanguage(state.language);
+        updateRootModeUI();
+        document.getElementById("rootMode")?.addEventListener("change", updateRootModeUI);
+        document.getElementById("scanRootEditMode")?.addEventListener("change", updateEditDialogModeUI);
         document.addEventListener("click", (event) => {
           void handleClick(event);
         });

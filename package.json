@@ -1,6 +1,6 @@
 {
   "name": "@im-fan/skill-manage",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Local-first agent skill manager with a global skill-manager CLI.",
   "license": "MIT",
   "bin": {

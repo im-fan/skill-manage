@@ -13,6 +13,7 @@ def fetch_scan_roots(conn: sqlite3.Connection) -> list[dict]:
               sr.path,
               sr.mode,
               sr.note,
+              sr.git_url,
               sr.status,
               sr.last_error,
               sr.last_scan_at,

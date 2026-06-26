@@ -177,12 +177,12 @@ class SkillManageHandler(BaseHTTPRequestHandler):
             body = self.read_json()
 
             if parsed.path == "/api/scan-roots":
-                save_scan_root(body.get("path"), body.get("mode"), body.get("note", ""))
+                save_scan_root(body.get("path"), body.get("mode"), body.get("note", ""), body.get("git_url", ""))
                 self.respond_ok("扫描源已保存并完成扫描")
                 return
 
             if parsed.path == "/api/scan-roots/update":
-                update_scan_root(body.get("old_path"), body.get("path"), body.get("mode"), body.get("note", ""))
+                update_scan_root(body.get("old_path"), body.get("path"), body.get("mode"), body.get("note", ""), body.get("git_url", ""))
                 self.respond_ok("扫描源已更新并完成扫描")
                 return
 

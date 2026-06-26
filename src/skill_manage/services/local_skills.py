@@ -9,16 +9,30 @@ from ..db import db_conn, init_db, row_dicts
 from ..errors import AppError
 from ..repositories.local_skills import fetch_local_skills, upsert_local_skill
 from ..utils.filesystem import collect_skill_dirs, fs_created_meta, is_directory, is_skill_dir, path_exists, pick_directory_destination
+from ..utils.git import clone_or_pull, resolve_local_path
 from ..utils.paths import normalize_path
 from ..utils.text import read_skill_description
 
 
-def validate_scan_root_input(path_value: str, mode: str) -> str:
+def validate_git_url(url_value: str) -> str:
+    """校验 git URL 非空且格式基本合法。"""
+    url = (url_value or "").strip()
+    if not url:
+        raise AppError("请填写 Git 仓库地址。")
+    if not (url.startswith("http://") or url.startswith("https://") or url.startswith("git@") or url.startswith("ssh://")):
+        raise AppError("Git 仓库地址格式不合法，支持 http/https/git@/ssh 协议。")
+    return url
+
+
+def validate_scan_root_input(path_value: str, mode: str, git_url: str = "") -> str:
+    if mode not in {"skill_root", "skill_dir", "git_repo"}:
+        raise AppError("扫描源类型不合法。")
+    if mode == "git_repo":
+        validate_git_url(git_url)
+        return resolve_local_path(git_url)
     normalized = normalize_path(path_value)
     if not normalized:
         raise AppError("请填写有效路径。")
-    if mode not in {"skill_root", "skill_dir"}:
-        raise AppError("扫描源类型不合法。")
     if not path_exists(normalized) or not is_directory(normalized):
         raise AppError("路径不存在或不是目录。")
     if mode == "skill_dir" and not is_skill_dir(normalized):
@@ -142,10 +156,10 @@ def move_local_skill_to_root(skill_path: str, root_path: str) -> str:
 
         conn.execute("DELETE FROM skills WHERE path = ?", (normalized_skill,))
         upsert_local_skill(conn, destination_path, normalized_root)
-        sync_one_root(conn, normalized_root, "skill_root")
+        _sync_root_with_git(conn, normalized_root, "skill_root", "")
 
         if source_root_row and source_root_row["mode"] == "skill_root":
-            sync_one_root(conn, source_root, "skill_root")
+            _sync_root_with_git(conn, source_root, "skill_root", "")
         elif source_root_row and source_root_row["mode"] == "skill_dir":
             conn.execute("DELETE FROM scan_roots WHERE path = ?", (source_root,))
 
@@ -171,6 +185,7 @@ def sync_local_skill_status(conn: sqlite3.Connection) -> None:
 
 
 def sync_one_root(conn: sqlite3.Connection, root_path: str, mode: str) -> list[str]:
+    """扫描单个根目录，mode 应为 skill_root 或 skill_dir（不含 git_repo）。"""
     normalized = normalize_path(root_path)
     discovered = collect_skill_dirs(normalized, mode)
 
@@ -209,21 +224,30 @@ def sync_one_root(conn: sqlite3.Connection, root_path: str, mode: str) -> list[s
     return discovered
 
 
-def save_scan_root(path_value: str, mode: str, note: str) -> None:
-    normalized = validate_scan_root_input(path_value, mode)
+def _sync_root_with_git(conn: sqlite3.Connection, root_path: str, mode: str, git_url: str) -> list[str]:
+    """统一的扫描入口：git_repo 先 pull 再按 skill_root 扫描，其余直接扫描。"""
+    if mode == "git_repo" and git_url:
+        clone_or_pull(git_url, root_path)
+        return sync_one_root(conn, root_path, "skill_root")
+    return sync_one_root(conn, root_path, mode)
+
+
+def save_scan_root(path_value: str, mode: str, note: str, git_url: str = "") -> None:
+    normalized = validate_scan_root_input(path_value, mode, git_url)
+    actual_git_url = git_url.strip() if mode == "git_repo" else ""
 
     with db_conn() as conn:
         init_db(conn)
         conn.execute(
             """
-            INSERT INTO scan_roots (path, mode, note, status, last_error, created_at, updated_at)
-            VALUES (?, ?, ?, 'idle', '', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            ON CONFLICT(path) DO UPDATE SET mode = excluded.mode, note = excluded.note, updated_at = CURRENT_TIMESTAMP
+            INSERT INTO scan_roots (path, mode, note, git_url, status, last_error, created_at, updated_at)
+            VALUES (?, ?, ?, ?, 'idle', '', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            ON CONFLICT(path) DO UPDATE SET mode = excluded.mode, note = excluded.note, git_url = excluded.git_url, updated_at = CURRENT_TIMESTAMP
             """,
-            (normalized, mode, note or ""),
+            (normalized, mode, note or "", actual_git_url),
         )
         try:
-            sync_one_root(conn, normalized, mode)
+            _sync_root_with_git(conn, normalized, mode, actual_git_url)
         except AppError as exc:
             conn.execute(
                 "UPDATE scan_roots SET status = 'error', last_error = ?, updated_at = CURRENT_TIMESTAMP WHERE path = ?",
@@ -238,9 +262,10 @@ def save_scan_root(path_value: str, mode: str, note: str) -> None:
             raise AppError(str(exc))
 
 
-def update_scan_root(old_path_value: str, path_value: str, mode: str, note: str) -> None:
+def update_scan_root(old_path_value: str, path_value: str, mode: str, note: str, git_url: str = "") -> None:
     old_path = normalize_path(old_path_value)
-    normalized = validate_scan_root_input(path_value, mode)
+    normalized = validate_scan_root_input(path_value, mode, git_url)
+    actual_git_url = git_url.strip() if mode == "git_repo" else ""
 
     with db_conn() as conn:
         init_db(conn)
@@ -255,22 +280,22 @@ def update_scan_root(old_path_value: str, path_value: str, mode: str, note: str)
             conn.execute(
                 """
                 UPDATE scan_roots
-                SET path = ?, mode = ?, note = ?, status = 'idle', last_error = '', updated_at = CURRENT_TIMESTAMP
+                SET path = ?, mode = ?, note = ?, git_url = ?, status = 'idle', last_error = '', updated_at = CURRENT_TIMESTAMP
                 WHERE path = ?
                 """,
-                (normalized, mode, note or "", old_path),
+                (normalized, mode, note or "", actual_git_url, old_path),
             )
         else:
             conn.execute(
                 """
                 UPDATE scan_roots
-                SET mode = ?, note = ?, status = 'idle', last_error = '', updated_at = CURRENT_TIMESTAMP
+                SET mode = ?, note = ?, git_url = ?, status = 'idle', last_error = '', updated_at = CURRENT_TIMESTAMP
                 WHERE path = ?
                 """,
-                (mode, note or "", normalized),
+                (mode, note or "", actual_git_url, normalized),
             )
         try:
-            sync_one_root(conn, normalized, mode)
+            _sync_root_with_git(conn, normalized, mode, actual_git_url)
         except AppError as exc:
             conn.execute(
                 "UPDATE scan_roots SET status = 'error', last_error = ?, updated_at = CURRENT_TIMESTAMP WHERE path = ?",
@@ -296,10 +321,10 @@ def remove_scan_root(path_value: str) -> None:
 def rescan_all_roots() -> None:
     with db_conn() as conn:
         init_db(conn)
-        rows = row_dicts(conn.execute("SELECT path, mode FROM scan_roots"))
+        rows = row_dicts(conn.execute("SELECT path, mode, git_url FROM scan_roots"))
         for row in rows:
             try:
-                sync_one_root(conn, row["path"], row["mode"])
+                _sync_root_with_git(conn, row["path"], row["mode"], row.get("git_url", ""))
             except Exception as exc:
                 conn.execute(
                     "UPDATE scan_roots SET status = 'error', last_error = ?, updated_at = CURRENT_TIMESTAMP WHERE path = ?",
@@ -311,8 +336,9 @@ def rescan_one_root(path_value: str, mode: str | None = None) -> None:
     normalized = normalize_path(path_value)
     with db_conn() as conn:
         init_db(conn)
-        row = conn.execute("SELECT mode FROM scan_roots WHERE path = ?", (normalized,)).fetchone()
+        row = conn.execute("SELECT mode, git_url FROM scan_roots WHERE path = ?", (normalized,)).fetchone()
         actual_mode = mode or (row["mode"] if row else None)
         if not actual_mode:
             raise AppError("扫描源不存在。", HTTPStatus.NOT_FOUND)
-        sync_one_root(conn, normalized, actual_mode)
+        git_url = row["git_url"] if row else ""
+        _sync_root_with_git(conn, normalized, actual_mode, git_url)

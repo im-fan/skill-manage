@@ -46,8 +46,9 @@ def init_db(conn: sqlite3.Connection) -> None:
         """
         CREATE TABLE IF NOT EXISTS scan_roots (
           path TEXT PRIMARY KEY,
-          mode TEXT NOT NULL CHECK(mode IN ('skill_root', 'skill_dir')),
+          mode TEXT NOT NULL CHECK(mode IN ('skill_root', 'skill_dir', 'git_repo')),
           note TEXT DEFAULT '',
+          git_url TEXT DEFAULT '',
           status TEXT DEFAULT 'idle',
           last_error TEXT DEFAULT '',
           last_scan_at TEXT,
@@ -169,3 +170,46 @@ def migrate_db(conn: sqlite3.Connection) -> None:
             conn.execute("ALTER TABLE operation_logs ADD COLUMN detail TEXT DEFAULT ''")
         if "detail_summary" not in operation_log_columns:
             conn.execute("ALTER TABLE operation_logs ADD COLUMN detail_summary TEXT DEFAULT ''")
+
+    scan_root_columns = {row["name"] for row in row_dicts(conn.execute("PRAGMA table_info(scan_roots)"))}
+    if "git_url" not in scan_root_columns:
+        conn.execute("ALTER TABLE scan_roots ADD COLUMN git_url TEXT DEFAULT ''")
+    scan_root_schema = conn.execute(
+        "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'scan_roots'"
+    ).fetchone()
+    if scan_root_schema and "'git_repo'" not in (scan_root_schema["sql"] or ""):
+        conn.execute(
+            """
+            CREATE TABLE scan_roots_new (
+              path TEXT PRIMARY KEY,
+              mode TEXT NOT NULL CHECK(mode IN ('skill_root', 'skill_dir', 'git_repo')),
+              note TEXT DEFAULT '',
+              git_url TEXT DEFAULT '',
+              status TEXT DEFAULT 'idle',
+              last_error TEXT DEFAULT '',
+              last_scan_at TEXT,
+              created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO scan_roots_new (
+              path, mode, note, git_url, status, last_error, last_scan_at, created_at, updated_at
+            )
+            SELECT
+              path,
+              mode,
+              note,
+              COALESCE(git_url, ''),
+              status,
+              last_error,
+              last_scan_at,
+              created_at,
+              updated_at
+            FROM scan_roots
+            """
+        )
+        conn.execute("DROP TABLE scan_roots")
+        conn.execute("ALTER TABLE scan_roots_new RENAME TO scan_roots")
