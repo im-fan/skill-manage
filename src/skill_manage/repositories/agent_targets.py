@@ -169,9 +169,6 @@ def ensure_agent_targets(conn: sqlite3.Connection) -> None:
         detection = detect_agent_path(agent)
         existing = fetch_agent_row(conn, agent["code"])
         legacy = legacy_targets.get(agent["code"])
-        if existing is None and legacy is None and not detection["detected"]:
-            continue
-
         configured_path = ""
         detected_path = detection["detected"]
         if existing is not None:

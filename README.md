@@ -66,8 +66,8 @@ The default deployment model is local-only: the built-in server is intended to r
 
 ### System
 
-- Show system status cards for service state, service URL, SQLite path, and Python version.
-- Show recent operation logs for write/update style actions without startup noise.
+- Show system status cards for service state, service URL, SQLite path, and config path.
+- The system page no longer shows recent operations; operation logs remain available through the backend API for audit and diagnostics.
 
 ## Language Switch
 
@@ -233,7 +233,7 @@ After startup succeeds, the Python service logs a startup success message and th
 - Clean old symlinks, invalid skill mounts, and duplicated skill folders.
 - Migrate direct skill folders from agent directories into a managed repository.
 - Review which skills are mounted into the current agent and rescan them quickly.
-- Keep a local-first workflow instead of relying on a remote marketplace or sync service.
+- Keep a local-first workflow instead of relying on remote sync services.
 
 ## HTTP API
 
@@ -285,7 +285,7 @@ This project is released under the MIT License. See [LICENSE](./LICENSE).
 
 ## Scope
 
-This project is for local skill management. It does not try to be a remote sync service or a marketplace.
+This project is for local skill management. It does not try to be a remote sync service.
 
 It is a good fit for:
 

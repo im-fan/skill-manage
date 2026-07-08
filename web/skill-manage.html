@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>🗃️ Skill Manage</title>
+  <title>Skill Manage</title>
   <style>
     :root {
       --bg: #f3f7fb;
@@ -40,7 +40,11 @@
       --info-bg: rgba(17, 142, 216, 0.12);
       --info-line: rgba(17, 142, 216, 0.22);
       --shadow: 0 8px 20px rgba(23, 58, 92, 0.08);
-      --radius: 24px;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-pill: 999px;
       --font: "Avenir Next", "IBM Plex Sans", "PingFang SC", "Helvetica Neue", sans-serif;
       --mono: "SFMono-Regular", "JetBrains Mono", "Menlo", monospace;
     }
@@ -96,6 +100,7 @@
 
     body {
       padding: 28px;
+      overflow-x: hidden;
     }
 
     body.modal-open {
@@ -105,8 +110,116 @@
     .shell {
       max-width: 1520px;
       margin: 0 auto;
+      min-height: calc(100dvh - 56px);
       display: grid;
-      gap: 24px;
+      grid-template-columns: 224px minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .side-nav {
+      position: sticky;
+      top: 28px;
+      align-self: start;
+      min-height: calc(100dvh - 56px);
+      padding: 16px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 18px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow);
+    }
+
+    .side-brand h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.1;
+    }
+
+    .side-brand p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .side-nav-list {
+      display: grid;
+      align-content: start;
+      gap: 6px;
+    }
+
+    .side-nav-button {
+      width: 100%;
+      justify-content: flex-start;
+      color: var(--text);
+      background: transparent;
+      border-color: transparent;
+      box-shadow: none;
+      border-radius: var(--radius-sm);
+    }
+
+    .side-nav-button:hover,
+    .side-nav-button.active {
+      transform: none;
+      filter: none;
+      background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+      border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
+    }
+
+    .side-footer {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .main-frame {
+      min-width: 0;
+      display: grid;
+      align-content: start;
+      gap: 18px;
+    }
+
+    .top-bar {
+      position: sticky;
+      top: 28px;
+      z-index: 8;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 14px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .breadcrumb strong {
+      color: var(--text);
+    }
+
+    .top-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
     }
 
     .hero,
@@ -115,7 +228,7 @@
       border: 1px solid var(--line);
       box-shadow: var(--shadow);
       backdrop-filter: blur(8px);
-      border-radius: var(--radius);
+      border-radius: var(--radius-lg);
     }
 
     .hero {
@@ -125,6 +238,33 @@
       display: grid;
       gap: 16px;
       z-index: 5;
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+      gap: 18px;
+    }
+
+    .agent-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .agent-tab {
+      flex: 0 0 auto;
+      color: var(--text);
+      background: var(--surface);
+      border-color: var(--line);
+      border-radius: var(--radius-sm);
+      box-shadow: none;
+    }
+
+    .agent-tab.active {
+      background: color-mix(in srgb, var(--accent) 14%, var(--surface-strong));
+      border-color: color-mix(in srgb, var(--accent) 34%, var(--line));
     }
 
     .hero-top {
@@ -173,12 +313,13 @@
     input,
     textarea {
       font: inherit;
+      min-width: 0;
     }
 
     button {
       cursor: pointer;
       border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
-      border-radius: 14px;
+      border-radius: var(--radius-md);
       padding: 8px 12px;
       color: var(--button-text);
       background: var(--accent);
@@ -228,7 +369,7 @@
       justify-content: center;
       align-items: center;
       gap: 8px;
-      border-radius: 999px;
+      border-radius: var(--radius-pill);
     }
 
     .language-toggle {
@@ -236,7 +377,7 @@
       align-items: center;
       gap: 4px;
       padding: 4px;
-      border-radius: 999px;
+      border-radius: var(--radius-pill);
       border: 1px solid var(--line);
       background: color-mix(in srgb, var(--card-strong) 86%, var(--surface));
     }
@@ -244,7 +385,7 @@
     .language-toggle button {
       min-width: 44px;
       padding: 6px 10px;
-      border-radius: 999px;
+      border-radius: var(--radius-pill);
       border-color: transparent;
       background: transparent;
       color: var(--muted);
@@ -267,7 +408,7 @@
 
     .theme-icon.active {
       opacity: 1;
-      transform: scale(1.06);
+      transform: scale(1.01);
       color: var(--text);
     }
 
@@ -282,7 +423,7 @@
     .badge,
     .stat,
     .pill {
-      border-radius: 999px;
+      border-radius: var(--radius-pill);
       padding: 6px 10px;
       font-size: 13px;
       line-height: 1;
@@ -330,7 +471,7 @@
     }
 
     .stat {
-      border-radius: 20px;
+      border-radius: var(--radius-lg);
       padding: 16px;
       background: var(--surface-strong);
       border-color: var(--line);
@@ -360,7 +501,7 @@
 
     .tab-button {
       padding: 8px 14px;
-      border-radius: 999px;
+      border-radius: var(--radius-pill);
       background: var(--surface-strong);
       border: 1px solid var(--line);
       color: var(--muted);
@@ -398,7 +539,7 @@
       left: 0;
       min-width: 260px;
       padding: 12px;
-      border-radius: 18px;
+      border-radius: var(--radius-lg);
       border: 1px solid var(--line);
       background: var(--card-strong);
       box-shadow: var(--shadow);
@@ -545,7 +686,7 @@
     select,
     textarea {
       width: 100%;
-      border-radius: 14px;
+      border-radius: var(--radius-md);
       border: 1px solid var(--input-border);
       background: var(--input-bg);
       color: var(--text);
@@ -573,7 +714,7 @@
 
     .list-item {
       padding: 16px;
-      border-radius: 18px;
+      border-radius: var(--radius-lg);
       border: 1px solid var(--line);
       background: var(--surface-strong);
       display: grid;
@@ -606,7 +747,7 @@
 
     .skill-search-shell {
       padding: 12px;
-      border-radius: 20px;
+      border-radius: var(--radius-lg);
       border: 1px solid var(--line);
       background: color-mix(in srgb, var(--surface-subtle) 80%, var(--card-strong));
       box-shadow: none;
@@ -619,7 +760,7 @@
       min-height: 100%;
       height: 100%;
       padding: 16px;
-      border-radius: 22px;
+      border-radius: var(--radius-lg);
       border-color: var(--line);
       background: color-mix(in srgb, var(--card-strong) 70%, transparent);
       box-shadow: 0 4px 12px color-mix(in srgb, var(--text) 4%, transparent);
@@ -673,7 +814,7 @@
     .skill-card-tag {
       display: inline-flex;
       align-items: center;
-      border-radius: 999px;
+      border-radius: var(--radius-pill);
       padding: 6px 10px;
       font-size: 12px;
       line-height: 1;
@@ -767,7 +908,7 @@
       display: grid;
       gap: 8px;
       padding: 12px;
-      border-radius: 16px;
+      border-radius: var(--radius-md);
       background: color-mix(in srgb, var(--surface-subtle) 66%, transparent);
       border: 1px solid color-mix(in srgb, var(--line) 76%, transparent);
     }
@@ -784,7 +925,7 @@
       display: grid;
       gap: 12px;
       padding: 12px;
-      border-radius: 18px;
+      border-radius: var(--radius-lg);
       background: color-mix(in srgb, var(--surface-strong) 72%, transparent);
       border: 1px solid color-mix(in srgb, var(--line) 74%, transparent);
     }
@@ -805,7 +946,7 @@
 
     .skill-card-score {
       padding: 8px 10px;
-      border-radius: 16px;
+      border-radius: var(--radius-md);
       border: 1px solid var(--line);
       background: color-mix(in srgb, var(--surface-subtle) 78%, var(--card-strong));
       font-size: 18px;
@@ -903,11 +1044,13 @@
 
     .empty {
       border: 1px dashed var(--line);
-      border-radius: 18px;
+      border-radius: var(--radius-lg);
       padding: 16px;
       color: var(--muted);
       text-align: center;
       background: var(--surface-subtle);
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     .status-line {
@@ -983,44 +1126,20 @@
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     }
 
-    .log-list {
-      display: grid;
-      gap: 12px;
-      min-height: 520px;
-      max-height: min(72vh, 860px);
-      overflow: auto;
-      padding-right: 8px;
-    }
-
-    .log-line {
-      padding: 12px 16px;
-      border-radius: 18px;
-      background: color-mix(in srgb, var(--surface-strong) 90%, var(--card-strong));
-      border: 1px solid var(--line);
-      font-size: 13px;
-      line-height: 1.65;
-      display: grid;
-      gap: 8px;
-    }
-
-    .logs-card {
-      grid-column: 1 / -1;
-    }
-
     .system-layout {
-      grid-template-columns: minmax(360px, 430px) minmax(0, 1fr);
+      grid-template-columns: 1fr;
       align-items: start;
     }
 
     .system-status-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 12px;
     }
 
     .status-card {
-      min-height: 88px;
-      padding: 12px 14px;
-      gap: 6px;
+      min-height: 116px;
+      padding: 14px 16px;
+      gap: 8px;
       align-content: space-between;
       background: color-mix(in srgb, var(--surface-subtle) 78%, var(--card-strong));
     }
@@ -1030,60 +1149,26 @@
       line-height: 1.7;
     }
 
-    .system-layout .logs-card {
-      grid-column: auto;
-      min-width: 0;
-    }
-
-    .log-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .log-head strong {
-      font-size: 15px;
-    }
-
-    .log-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .log-detail {
-      color: var(--muted);
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .log-more,
-    .log-end {
-      text-align: center;
-      color: var(--muted);
-      padding: 8px 0 2px;
-    }
-
     dialog {
       border: 1px solid var(--line);
-      border-radius: 22px;
+      border-radius: var(--radius-lg);
       padding: 0;
       background: var(--card-strong);
       color: var(--text);
       box-shadow: var(--shadow);
       width: min(560px, calc(100vw - 32px));
+      max-width: calc(100vw - 32px);
     }
 
     #skillDetailDialog {
       width: min(1040px, calc(100vw - 32px));
+      max-width: calc(100vw - 32px);
       height: min(720px, calc(100dvh - 32px));
       overflow: hidden;
     }
 
     #skillDetailDialog .dialog-shell {
+      min-width: 0;
       height: 100%;
       grid-template-rows: auto auto minmax(0, 1fr) auto;
       overflow: hidden;
@@ -1095,6 +1180,7 @@
     }
 
     .dialog-shell {
+      min-width: 0;
       padding: 24px;
       display: grid;
       gap: 16px;
@@ -1116,11 +1202,12 @@
     }
 
     .skill-detail-path-row {
+      min-width: 0;
       display: grid;
       gap: 6px;
       padding: 10px 12px;
       border: 1px solid var(--line);
-      border-radius: 14px;
+      border-radius: var(--radius-md);
       background: color-mix(in srgb, var(--surface-subtle) 76%, transparent);
     }
 
@@ -1154,7 +1241,7 @@
     .skill-detail-preview {
       min-width: 0;
       border: 1px solid var(--line);
-      border-radius: 14px;
+      border-radius: var(--radius-md);
       background: color-mix(in srgb, var(--surface-subtle) 76%, transparent);
     }
 
@@ -1168,7 +1255,7 @@
       width: 100%;
       min-height: 32px;
       padding: 7px 9px;
-      border-radius: 10px;
+      border-radius: var(--radius-sm);
       font-family: var(--mono);
       font-size: 12px;
       line-height: 1.4;
@@ -1239,6 +1326,38 @@
     }
 
     @media (max-width: 1120px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .side-nav {
+        position: static;
+        min-height: auto;
+        grid-template-rows: auto auto;
+      }
+
+      .side-nav-list {
+        display: flex;
+        overflow-x: auto;
+      }
+
+      .side-nav-button {
+        width: auto;
+        flex: 0 0 auto;
+      }
+
+      .side-footer {
+        display: none;
+      }
+
+      .top-bar {
+        top: 16px;
+      }
+
+      .overview-grid {
+        grid-template-columns: 1fr;
+      }
+
       .agent-top-grid,
       .agent-layout,
       .agent-manage-layout {
@@ -1260,16 +1379,64 @@
 
     @media (max-width: 720px) {
       body {
-        padding: 16px;
+        padding: 12px;
+        overflow-x: hidden;
+      }
+
+      .shell,
+      .side-nav,
+      .main-frame,
+      .top-bar,
+      .card,
+      .tab-panel,
+      .panel-grid,
+      .scan-root-form,
+      .list,
+      .empty {
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      .shell {
+        width: 100%;
+        gap: 12px;
+      }
+
+      .side-nav-list {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        overflow-x: visible;
+      }
+
+      .side-nav-button {
+        width: 100%;
+        min-width: 0;
+        justify-content: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .top-bar {
+        position: static;
+        flex-wrap: wrap;
+      }
+
+      .top-actions {
+        width: 100%;
+        justify-content: space-between;
       }
 
       .hero,
       .card {
-        padding: 18px;
+        padding: 16px;
       }
 
       .field-grid {
         grid-template-columns: 1fr;
+      }
+
+      .panel-grid {
+        grid-template-columns: minmax(0, 1fr);
       }
 
       .scan-root-row {
@@ -1296,6 +1463,20 @@
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       }
 
+      .stat-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      }
+
+      #skillDetailDialog {
+        width: calc(100vw - 40px);
+        max-width: calc(100vw - 40px);
+        height: min(720px, calc(100dvh - 24px));
+      }
+
+      .dialog-shell {
+        padding: 16px;
+      }
+
       .skill-detail-layout {
         grid-template-columns: 1fr;
         min-height: auto;
@@ -1306,9 +1487,23 @@
       }
 
       .skill-detail-preview {
-        min-height: 420px;
+        min-height: 0;
       }
 
+    }
+
+    html[data-visual-width="390"] .shell {
+      width: 366px;
+      max-width: 366px;
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    html[data-visual-width="390"] #skillDetailDialog {
+      width: 350px;
+      max-width: 350px;
+      margin-left: 20px;
+      margin-right: 0;
     }
 
     input[type="range"] {
@@ -1343,16 +1538,43 @@
       border: none;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+
+      button:hover,
+      .skill-card:hover,
+      .theme-icon.active,
+      .skill-card-actions button:hover {
+        transform: none;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="shell">
-    <section class="hero">
-      <div class="hero-top">
-        <div class="hero-brand">
-          <h1>Skill Manage</h1>
-        </div>
-        <div class="hero-actions">
+    <nav class="side-nav" aria-label="Primary">
+      <div class="side-brand">
+        <h1>Skill Manage</h1>
+        <p data-i18n="hero.subtitle">统一管理 SKILL仓库扫描、Agent 挂载与失效清理</p>
+      </div>
+      <div id="topTabs" class="side-nav-list"></div>
+      <div class="side-footer">
+        <span class="badge info" id="sideRuntimeStatus">-</span>
+      </div>
+    </nav>
+
+    <main class="main-frame">
+      <header class="top-bar">
+        <div id="breadcrumb" class="breadcrumb"></div>
+        <div class="top-actions">
           <div id="languageToggle" class="language-toggle" aria-label="Language Toggle">
             <button type="button" class="secondary active" data-action="set-language" data-lang="zh">中</button>
             <button type="button" class="secondary" data-action="set-language" data-lang="en">En</button>
@@ -1362,12 +1584,26 @@
             <span id="themeMoon" class="theme-icon">☾</span>
           </button>
         </div>
+      </header>
+
+    <section id="tab-overview" class="tab-panel active">
+      <div class="overview-grid">
+        <article class="card">
+          <div class="section-head">
+            <h2 data-i18n="tab.overview">概览</h2>
+          </div>
+          <div id="overviewStats" class="stat-grid"></div>
+        </article>
+        <article class="card">
+          <div class="section-head">
+            <h2 data-i18n="overview.risks">待处理项</h2>
+          </div>
+          <div id="overviewRisks" class="list"></div>
+        </article>
       </div>
-      <div id="overviewStats" class="stat-grid"></div>
-      <div id="topTabs" class="tabs"></div>
     </section>
 
-    <section id="tab-local" class="tab-panel active">
+    <section id="tab-local" class="tab-panel">
       <div class="panel-grid">
         <article class="card">
           <div class="section-head">
@@ -1441,6 +1677,12 @@
     </section>
 
     <section id="tab-agent-list" class="tab-panel">
+      <article class="card">
+        <div class="section-head">
+          <h2 data-i18n="agentTabs.title">Agent</h2>
+        </div>
+        <div id="agentTabs" class="agent-tabs" role="tablist" aria-label="Agent"></div>
+      </article>
       <div id="agentListContent" class="agent-stack"></div>
     </section>
 
@@ -1499,14 +1741,9 @@
           </div>
           <div id="systemStatus" class="list system-status-grid"></div>
         </article>
-        <article class="card system-card logs-card">
-          <div class="section-head">
-            <h2 data-i18n="system.logs.title">最近操作</h2>
-          </div>
-          <div id="operationLog" class="log-list"></div>
-        </article>
       </div>
     </section>
+    </main>
   </div>
 
   <dialog id="moveSkillDialog">
@@ -1594,10 +1831,16 @@
     </form>
   </dialog>
 
+  <script type="module" src="./assets/skill-manage-support.js"></script>
   <script>
     (() => {
+      const params = new URLSearchParams(location.search);
+      const visualWidth = params.get("visual-width");
+      if (visualWidth === "390") {
+        document.documentElement.dataset.visualWidth = visualWidth;
+      }
       const state = {
-        activeTab: "local",
+        activeTab: params.get("tab") || "overview",
         language: localStorage.getItem("skill-manage-language") || "zh",
         search: "",
         agents: [],
@@ -1617,11 +1860,7 @@
           currentRootPath: "",
           selectedRootPath: ""
         },
-        theme: localStorage.getItem("skill-manage-theme") || localStorage.getItem("skill-manager-theme") || "light",
-        operationLogs: [],
-        operationLogPage: 1,
-        operationLogHasNext: false,
-        operationLogLoading: false,
+        theme: params.get("theme") || localStorage.getItem("skill-manage-theme") || localStorage.getItem("skill-manager-theme") || "light",
         runtime: {
           connected: false,
           error: "",
@@ -1636,6 +1875,7 @@
         localSkills: [],
         agentTargets: {},
         agentEntries: {},
+        pendingPreview: null,
         similarityThresholds: {},
         similarResults: {},
         cardDetails: {},
@@ -1644,7 +1884,7 @@
           files: [],
           selectedPath: ""
         },
-        apiBase: new URLSearchParams(location.search).get("api") || (location.protocol === "file:" ? "http://127.0.0.1:8765" : "")
+        apiBase: params.get("api") || (location.protocol === "file:" ? "http://127.0.0.1:8765" : "")
       };
 
       const $ = (selector) => document.querySelector(selector);
@@ -1682,6 +1922,10 @@
           "action.deleteFolder": "删除目录",
           "action.createAgent": "创建 Agent",
           "action.saveUpdate": "保存更新",
+          "action.refresh": "刷新",
+          "action.addSource": "添加源",
+          "common.name": "名称",
+          "common.url": "URL",
           "common.type": "类型",
           "common.path": "路径",
           "common.repoUrl": "仓库地址",
@@ -1694,7 +1938,6 @@
           "common.serviceStatus": "服务状态",
           "common.serviceUrl": "服务地址",
           "common.sqlite": "SQLite3",
-          "common.python": "Python",
           "common.configPath": "配置地址",
           "common.connected": "已连接",
           "common.disconnected": "未连接",
@@ -1706,8 +1949,7 @@
           "placeholder.agentDisplayName": "例如：Codex Proxy",
           "placeholder.agentPath": "/Users/you/.agent/skills",
           "placeholder.filterAddableSkills": "按名称 / 路径 / 描述查找可添加的 SKILL",
-          "placeholder.filterCurrentSkills": "按名称 / 路径 / 描述筛选当前目录 Skill",
-          "local.newScanRoot.title": "新增扫描源",
+          "placeholder.filterCurrentSkills": "按名称 / 路径 / 描述筛选当前目录 Skill",          "local.newScanRoot.title": "新增扫描源",
           "local.rootMode.skill_root": "Skill 根目录",
           "local.rootMode.skill_dir": "单个 Skill 目录",
           "local.rootMode.git_repo": "Git 仓库",
@@ -1740,9 +1982,12 @@
           "similarity.skillA": "技能 A",
           "similarity.skillB": "技能 B",
           "tab.local": "SKILL仓库",
-          "tab.agentList": "Agent列表",
+          "tab.overview": "概览",
+          "tab.agentList": "Agent 插件",
           "tab.agentManage": "Agent管理",
           "tab.system": "系统",
+          "overview.risks": "待处理项",
+          "overview.emptyRisks": "当前没有需要处理的冲突或错误。",
           "agentManage.form.newTitle": "新增 Agent",
           "agentManage.form.note": "支持手动新增、编辑目录信息，并将 Agent 控制权全部收敛到数据库。",
           "agentManage.form.code": "Agent Code",
@@ -1787,12 +2032,8 @@
           "agentList.savePathTitle": "保存当前 agent 的目标目录配置",
           "agentList.refreshTitle": "重新扫描当前目标目录中的 Skill",
           "agentList.cleanupTitle": "清理当前目录里已经失效的挂载链接",
+          "agentTabs.title": "Agent",
           "system.status.title": "系统状态",
-          "system.logs.title": "最近操作",
-          "system.logs.empty": "还没有操作记录。",
-          "system.logs.loadingMore": "正在加载更多操作记录...",
-          "system.logs.scrollMore": "向下滚动加载更多",
-          "system.logs.end": "已经到底了",
           "dialog.moveSkill.title": "移动 Skill",
           "dialog.moveSkill.body": "即将移动：<span class=\"code\">{skillPath}</span><br>当前源：<span class=\"code\">{currentRootPath}</span><br>{result}",
           "dialog.moveSkill.result.agentDirect": "操作结果：会移动到选中的SKILL仓库，并在当前 agent 目录保留挂载链接。",
@@ -1851,6 +2092,10 @@
           "action.deleteFolder": "Delete Folder",
           "action.createAgent": "Create Agent",
           "action.saveUpdate": "Save Update",
+          "action.refresh": "Refresh",
+          "action.addSource": "Add Source",
+          "common.name": "Name",
+          "common.url": "URL",
           "common.type": "Type",
           "common.path": "Path",
           "common.repoUrl": "Repository URL",
@@ -1863,7 +2108,6 @@
           "common.serviceStatus": "Service Status",
           "common.serviceUrl": "Service URL",
           "common.sqlite": "SQLite3",
-          "common.python": "Python",
           "common.configPath": "Config Path",
           "common.connected": "Connected",
           "common.disconnected": "Disconnected",
@@ -1874,8 +2118,7 @@
           "placeholder.agentDisplayName": "For example: Codex Proxy",
           "placeholder.agentPath": "/Users/you/.agent/skills",
           "placeholder.filterAddableSkills": "Search addable SKILLs by name / path / description",
-          "placeholder.filterCurrentSkills": "Filter current folder SKILLs by name / path / description",
-          "local.newScanRoot.title": "New Scan Source",
+          "placeholder.filterCurrentSkills": "Filter current folder SKILLs by name / path / description",          "local.newScanRoot.title": "New Scan Source",
           "local.rootMode.skill_root": "Skill Root Directory",
           "local.rootMode.skill_dir": "Single Skill Directory",
           "local.rootMode.git_repo": "Git Repository",
@@ -1908,9 +2151,12 @@
           "similarity.skillA": "Skill A",
           "similarity.skillB": "Skill B",
           "tab.local": "SKILL Repository",
-          "tab.agentList": "Agent List",
+          "tab.overview": "Overview",
+          "tab.agentList": "Agent Plugins",
           "tab.agentManage": "Agent Manage",
           "tab.system": "System",
+          "overview.risks": "Open Items",
+          "overview.emptyRisks": "No conflict or error needs attention.",
           "agentManage.form.newTitle": "New Agent",
           "agentManage.form.note": "Manually add or edit agent directory settings and keep all agent control in the database.",
           "agentManage.form.code": "Agent Code",
@@ -1955,12 +2201,8 @@
           "agentList.savePathTitle": "Save the current target directory for this agent",
           "agentList.refreshTitle": "Rescan skills in the current target directory",
           "agentList.cleanupTitle": "Clean invalid mounted links in the current directory",
+          "agentTabs.title": "Agent",
           "system.status.title": "System Status",
-          "system.logs.title": "Recent Operations",
-          "system.logs.empty": "No operation log yet.",
-          "system.logs.loadingMore": "Loading more operation logs...",
-          "system.logs.scrollMore": "Scroll down to load more",
-          "system.logs.end": "Reached the end",
           "dialog.moveSkill.title": "Move Skill",
           "dialog.moveSkill.body": "Move now: <span class=\"code\">{skillPath}</span><br>Current source: <span class=\"code\">{currentRootPath}</span><br>{result}",
           "dialog.moveSkill.result.agentDirect": "Result: the skill will move into the selected SKILL repository and keep a mounted link in the current agent directory.",
@@ -2021,7 +2263,7 @@
         state.language = language === "en" ? "en" : "zh";
         localStorage.setItem("skill-manage-language", state.language);
         document.documentElement.lang = state.language === "en" ? "en" : "zh-CN";
-        document.title = "🗃️ Skill Manage";
+        document.title = "Skill Manage";
         applyStaticI18n();
         toggleLanguageButtonState();
       }
@@ -2339,29 +2581,6 @@
         }
       }
 
-      function applyOperationLogPayload(payload, { append = false } = {}) {
-        const items = Array.isArray(payload?.items) ? payload.items : [];
-        const pagination = payload?.pagination || {};
-        state.operationLogs = append ? [...state.operationLogs, ...items] : items;
-        state.operationLogPage = pagination.page || (append ? state.operationLogPage + 1 : 1);
-        state.operationLogHasNext = Boolean(pagination.has_next);
-      }
-
-      async function fetchOperationLogs({ page = 1, append = false } = {}) {
-        if (state.operationLogLoading) {
-          return;
-        }
-        state.operationLogLoading = true;
-        renderLogs();
-        try {
-          const payload = await apiRequest(`/api/operation-logs?page=${encodeURIComponent(page)}&page_size=20`);
-          applyOperationLogPayload(payload, { append });
-        } finally {
-          state.operationLogLoading = false;
-          renderLogs();
-        }
-      }
-
       function mountedLinkedAgents(skillPath) {
         return state.agents
           .map((agent) => {
@@ -2480,7 +2699,6 @@
         state.agents = payload.agents || [];
         state.agentTargets = payload.agentTargets || {};
         state.agentEntries = payload.agentEntries || {};
-        applyOperationLogPayload(payload.operationLogs || {}, { append: false });
         ensureCurrentAgentSelection();
       }
 
@@ -2583,6 +2801,9 @@
         const missingSkills = state.localSkills.filter((item) => item.status !== "ok").length;
         const invalidLinks = state.agents.reduce((count, agent) => count + (state.agentEntries[agent.agent_code] || []).filter((entry) => entry.status.startsWith("invalid_")).length, 0);
         const managedLinks = state.agents.reduce((count, agent) => count + (state.agentEntries[agent.agent_code] || []).filter((entry) => Number(entry.is_managed) === 1).length, 0);
+        const risks = [
+          ...state.scanRoots.filter((root) => root.last_error).map((root) => `${scanRootDisplayName(root)}: ${root.last_error}`),
+        ];
 
         $("#overviewStats").innerHTML = `
           <div class="stat">
@@ -2597,7 +2818,26 @@
             <span class="muted">${escapeHtml(state.language === "en" ? "Agent Count" : "Agent 数量")}</span>
             <strong>${state.agents.length}</strong>
           </div>
+          <div class="stat">
+            <span class="muted">${escapeHtml(state.language === "en" ? "Invalid Links" : "失效链接")}</span>
+            <strong>${invalidLinks}</strong>
+          </div>
+          <div class="stat">
+            <span class="muted">${escapeHtml(state.language === "en" ? "Managed Links" : "托管挂载")}</span>
+            <strong>${managedLinks}</strong>
+          </div>
         `;
+        const riskHost = $("#overviewRisks");
+        if (riskHost) {
+          riskHost.innerHTML = risks.length
+            ? risks.map((item) => `<div class="list-item status-card"><div class="path">${escapeHtml(item)}</div></div>`).join("")
+            : `<div class="empty">${escapeHtml(t("overview.emptyRisks"))}</div>`;
+        }
+        const runtime = $("#sideRuntimeStatus");
+        if (runtime) {
+          runtime.textContent = state.runtime.connected ? t("common.connected") : t("common.disconnected");
+          runtime.className = `badge ${state.runtime.connected ? "ok" : "danger"}`;
+        }
       }
 
       function renderRuntime() {
@@ -2731,12 +2971,38 @@
         if (!host) {
           return;
         }
-        host.innerHTML = `
-          <button class="tab-button ${state.activeTab === "local" ? "active" : ""}" data-tab="local">${escapeHtml(t("tab.local"))}</button>
-          <button class="tab-button ${state.activeTab === "agent-list" ? "active" : ""}" data-tab="agent-list">${escapeHtml(t("tab.agentList"))}</button>
-          <button class="tab-button ${state.activeTab === "agent-manage" ? "active" : ""}" data-tab="agent-manage">${escapeHtml(t("tab.agentManage"))}</button>
-          <button class="tab-button ${state.activeTab === "system" ? "active" : ""}" data-tab="system">${escapeHtml(t("tab.system"))}</button>
-        `;
+        const nav = [
+          ["overview", t("tab.overview")],
+          ["local", t("tab.local")],
+          ["agent-list", t("tab.agentList")],
+          ["system", t("tab.system")]
+        ];
+        host.innerHTML = nav.map(([tab, label]) => `
+          <button class="side-nav-button tab-button ${state.activeTab === tab ? "active" : ""}" data-tab="${tab}" aria-current="${state.activeTab === tab ? "page" : "false"}">${escapeHtml(label)}</button>
+        `).join("");
+        const breadcrumb = $("#breadcrumb");
+        if (breadcrumb) {
+          const current = nav.find(([tab]) => tab === state.activeTab)?.[1] || t("tab.overview");
+          breadcrumb.innerHTML = `<span>Skill Manage</span><span>/</span><strong>${escapeHtml(current)}</strong>`;
+        }
+      }
+
+      function renderAgentTabs() {
+        const host = $("#agentTabs");
+        if (!host) {
+          return;
+        }
+        const visible = visibleAgents();
+        host.innerHTML = visible.length ? visible.map((agent) => `
+          <button
+            class="agent-tab ${agent.agent_code === state.currentAgentCode ? "active" : ""}"
+            type="button"
+            role="tab"
+            aria-selected="${agent.agent_code === state.currentAgentCode ? "true" : "false"}"
+            data-action="select-agent"
+            data-agent="${escapeHtml(agent.agent_code)}"
+          >${escapeHtml(agent.display_name || agent.agent_code)}</button>
+        `).join("") : `<div class="empty">${escapeHtml(t("agentList.emptyNote"))}</div>`;
       }
 
       function renderAgentInlineSwitcher(agent, agents) {
@@ -2758,46 +3024,30 @@
       }
 
       function resetAgentManageForm() {
-        const editingCode = $("#agentManageEditingCode");
-        const codeInput = $("#agentManageCode");
-        const nameInput = $("#agentManageName");
-        const defaultInput = $("#agentManageDefaultPath");
-        const configuredInput = $("#agentManageConfiguredPath");
-        const title = $("#agentManageFormTitle");
-        const submit = $("#agentManageSubmit");
-        if (!editingCode || !codeInput || !nameInput || !defaultInput || !configuredInput || !title || !submit) {
-          return;
-        }
-        editingCode.value = "";
-        codeInput.value = "";
-        codeInput.readOnly = false;
-        nameInput.value = "";
-        defaultInput.value = "";
-        configuredInput.value = "";
-        title.textContent = t("agentManage.form.newTitle");
-        submit.textContent = t("action.createAgent");
+        $("#agentManageEditingCode").value = "";
+        $("#agentManageCode").value = "";
+        $("#agentManageCode").disabled = false;
+        $("#agentManageName").value = "";
+        $("#agentManageDefaultPath").value = "";
+        $("#agentManageConfiguredPath").value = "";
+        $("#agentManageFormTitle").textContent = t("agentManage.form.newTitle");
+        $("#agentManageSubmit").textContent = t("agentManage.form.createButton");
       }
 
       function populateAgentManageForm(agentCode) {
         const agent = findAgent(agentCode);
-        const editingCode = $("#agentManageEditingCode");
-        const codeInput = $("#agentManageCode");
-        const nameInput = $("#agentManageName");
-        const defaultInput = $("#agentManageDefaultPath");
-        const configuredInput = $("#agentManageConfiguredPath");
-        const title = $("#agentManageFormTitle");
-        const submit = $("#agentManageSubmit");
-        if (!agent || !editingCode || !codeInput || !nameInput || !defaultInput || !configuredInput || !title || !submit) {
+        if (!agent) {
+          resetAgentManageForm();
           return;
         }
-        editingCode.value = agent.agent_code || "";
-        codeInput.value = agent.agent_code || "";
-        codeInput.readOnly = true;
-        nameInput.value = agent.display_name || "";
-        defaultInput.value = agent.default_path || "";
-        configuredInput.value = agent.configured_path || "";
-        title.textContent = t("agentManage.editTitle", { name: agent.display_name || agent.agent_code });
-        submit.textContent = t("action.saveUpdate");
+        $("#agentManageEditingCode").value = agent.agent_code || "";
+        $("#agentManageCode").value = agent.agent_code || "";
+        $("#agentManageCode").disabled = true;
+        $("#agentManageName").value = agent.display_name || "";
+        $("#agentManageDefaultPath").value = agent.default_path || "";
+        $("#agentManageConfiguredPath").value = agent.configured_path || "";
+        $("#agentManageFormTitle").textContent = t("agentManage.editTitle", { name: agent.display_name || agent.agent_code || "-" });
+        $("#agentManageSubmit").textContent = t("action.save");
       }
 
       function renderAgentManage() {
@@ -3129,49 +3379,6 @@
         `).join("");
       }
 
-      function renderLogs() {
-        const container = $("#operationLog");
-        if (!container) {
-          return;
-        }
-        if (!state.operationLogs.length && !state.operationLogLoading) {
-          container.innerHTML = `<div class="empty">${escapeHtml(t("system.logs.empty"))}</div>`;
-          return;
-        }
-
-        container.innerHTML = `
-          ${state.operationLogs.map((entry) => `
-          <div class="log-line">
-            <div class="log-head">
-              <strong>${escapeHtml(entry.message || "-")}</strong>
-              <div class="log-meta">
-                <span class="badge ${escapeHtml(entry.level || "info")}">${escapeHtml(entry.level || "info")}</span>
-                ${entry.source ? `<span class="pill">${escapeHtml(entry.source)}</span>` : ""}
-                ${entry.action ? `<span class="pill">${escapeHtml(entry.action)}</span>` : ""}
-                <span class="note">${escapeHtml(entry.time || entry.created_at || "-")}</span>
-              </div>
-            </div>
-            <div class="log-detail">${escapeHtml(entry.detail_summary || entry.detail || entry.message || "")}</div>
-          </div>
-          `).join("")}
-          ${state.operationLogLoading ? `<div class="log-more">${escapeHtml(t("system.logs.loadingMore"))}</div>` : ""}
-          ${!state.operationLogLoading && state.operationLogHasNext ? `<div class="log-more">${escapeHtml(t("system.logs.scrollMore"))}</div>` : ""}
-          ${!state.operationLogLoading && !state.operationLogHasNext && state.operationLogs.length ? `<div class="log-end">${escapeHtml(t("system.logs.end"))}</div>` : ""}
-        `;
-      }
-
-      function handleOperationLogScroll(event) {
-        const container = event.currentTarget;
-        if (!container || state.operationLogLoading || !state.operationLogHasNext) {
-          return;
-        }
-        const threshold = 120;
-        if (container.scrollTop + container.clientHeight < container.scrollHeight - threshold) {
-          return;
-        }
-        void fetchOperationLogs({ page: state.operationLogPage + 1, append: true });
-      }
-
       function renderTabs() {
         document.querySelectorAll(".tab-button").forEach((button) => {
           button.classList.toggle("active", button.dataset.tab === state.activeTab);
@@ -3180,6 +3387,12 @@
         document.querySelectorAll(".tab-panel").forEach((panel) => {
           panel.classList.toggle("active", panel.id === `tab-${state.activeTab}`);
         });
+      }
+
+      function setActiveTab(tab) {
+        state.activeTab = tab;
+        params.set("tab", tab);
+        history.replaceState(null, "", `${location.pathname}?${params.toString()}${location.hash}`);
       }
 
       function renderAll() {
@@ -3191,14 +3404,73 @@
         renderScanRoots();
         renderLocalSkills();
         renderAgentPanels();
+        renderAgentTabs();
         renderAgentManage();
         renderLocalSimilarResults();
         Object.keys(state.similarResults).forEach((agentCode) => renderSimilarResults(agentCode));
         renderSystemStatus();
-        renderLogs();
         renderTabs();
         applyStaticI18n();
         toggleLanguageButtonState();
+        applyVisualBaselineMode();
+        applyVisualLayoutCheck();
+      }
+
+      function applyVisualBaselineMode() {
+        const visualMode = params.get("visual");
+        if (visualMode !== "skill-detail") {
+          return;
+        }
+        const dialog = $("#skillDetailDialog");
+        if (!dialog || dialog.open) {
+          return;
+        }
+        $("#skillDetailTitle").textContent = "Skill 详情";
+        $("#skillDetailPath").textContent = "/Users/example/skills/demo-skill/SKILL.md";
+        $("#skillDetailFileName").textContent = "SKILL.md";
+        $("#skillDetailTree").innerHTML = `<button class="skill-tree-file active" type="button">SKILL.md</button>`;
+        $("#skillDetailPreview").value = "# Demo Skill\n\n用于截图验收的只读预览内容。";
+        dialog.showModal();
+        document.body.classList.add("modal-open");
+      }
+
+      function applyVisualLayoutCheck() {
+        if (params.get("layout-check") !== "1") {
+          return;
+        }
+        document.querySelector('meta[name="visual-layout-check"]')?.remove();
+        const selectors = [
+          ".shell",
+          ".side-nav",
+          ".top-bar",
+          `#tab-${state.activeTab}`,
+          "#skillDetailDialog[open]"
+        ];
+        const layoutViewportWidth = window.innerWidth;
+        const captureWidth = Number(params.get("visual-width")) || layoutViewportWidth;
+        const failures = [];
+        const scrollWidth = Math.max(
+          document.documentElement.scrollWidth,
+          document.body?.scrollWidth || 0
+        );
+        if (scrollWidth > layoutViewportWidth + 1) {
+          failures.push(`document:${scrollWidth}>${layoutViewportWidth}`);
+        }
+        selectors.forEach((selector) => {
+          document.querySelectorAll(selector).forEach((element) => {
+            const rect = element.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) {
+              return;
+            }
+            if (rect.left < -1 || rect.right > captureWidth + 1) {
+              failures.push(`${selector}:${Math.round(rect.left)}-${Math.round(rect.right)}`);
+            }
+          });
+        });
+        const marker = document.createElement("meta");
+        marker.name = "visual-layout-check";
+        marker.content = failures.length ? `fail:${encodeURIComponent(failures.join("|"))}` : "ok";
+        document.head.appendChild(marker);
       }
 
       async function withRefresh(work, successMessage) {
@@ -3240,10 +3512,9 @@
         }
 
         if (target.dataset.tab) {
-          state.activeTab = target.dataset.tab;
+          setActiveTab(target.dataset.tab);
           state.agentSwitcherOpen = false;
-          renderTabs();
-          renderAgentPanels();
+          renderAll();
           return;
         }
 
@@ -3303,11 +3574,16 @@
 
         if (action === "select-agent") {
           state.currentAgentCode = target.dataset.agent || "";
-          state.activeTab = "agent-list";
+          setActiveTab("agent-list");
           state.agentSwitcherOpen = false;
           renderAll();
           return;
         }
+
+
+
+
+
 
         if (action === "agent-manage-new") {
           resetAgentManageForm();
@@ -3316,7 +3592,7 @@
 
         if (action === "edit-agent") {
           populateAgentManageForm(target.dataset.agent || "");
-          state.activeTab = "agent-manage";
+          setActiveTab("agent-manage");
           state.agentSwitcherOpen = false;
           renderTabs();
           renderAgentPanels();
@@ -3628,6 +3904,7 @@
           resetAgentManageForm();
           return;
         }
+
       }
 
       function updateAgentLibrarySearch(agentCode, value, selectionStart, selectionEnd) {
@@ -3664,6 +3941,9 @@
           renderLocalSkills();
           return;
         }
+
+
+
 
         if (event.target.dataset.localSimilaritySlider) {
           const value = parseFloat(event.target.value);
@@ -3918,7 +4198,6 @@
           void confirmMoveSkill();
         });
         $("#skillDetailDialog")?.addEventListener("close", closeSkillDetailDialog);
-        $("#operationLog")?.addEventListener("scroll", handleOperationLogScroll);
         resetAgentManageForm();
         renderAll();
         try {

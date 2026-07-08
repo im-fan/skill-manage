@@ -38,6 +38,11 @@ AGENTS = [
         "label": "OpenClaw",
         "default_path": "~/.openclaw/skills",
     },
+    {
+        "code": "opencode",
+        "label": "OpenCode",
+        "default_path": "~/.config/opencode/skills",
+    },
 ]
 
 BINARY_EXTENSIONS = {
