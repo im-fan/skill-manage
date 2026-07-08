@@ -29,5 +29,8 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "@im-fan/skill-manage": "^0.1.4"
   }
 }
